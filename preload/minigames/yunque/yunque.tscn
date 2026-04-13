@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://buswsar7rxlgh"]
+
+[ext_resource type="Script" uid="uid://b1cc7j0neo3vr" path="res://minigames/yunque/yunque.gd" id="1_b1vk7"]
+[ext_resource type="PackedScene" uid="uid://b7chpo4deuptr" path="res://entities/obstacles/obstaculo.tscn" id="2_stvyv"]
+[ext_resource type="PackedScene" uid="uid://bv020hu1daru" path="res://entities/player/player.tscn" id="3_b1vk7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4dvvg"]
+size = Vector2(1312, 16)
+
+[node name="GameYunque" type="Node2D" unique_id=1340176064]
+script = ExtResource("1_b1vk7")
+player_scene = ExtResource("3_b1vk7")
+anvil_scene = ExtResource("2_stvyv")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1426420671]
+position = Vector2(305, 347)
+
+[node name="ColorRect" type="ColorRect" parent="StaticBody2D" unique_id=648527535]
+offset_left = -656.0
+offset_top = -7.0
+offset_right = 616.0
+offset_bottom = 8.0
+metadata/_edit_use_anchors_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=2003327132]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_4dvvg")
+
+[node name="Timer" type="Timer" parent="." unique_id=1136560577]
+autostart = true
+
+[node name="SpawnPoints" type="Node2D" parent="." unique_id=614162876]
+position = Vector2(305, 304)
+
+[node name="Marker2D" type="Marker2D" parent="SpawnPoints" unique_id=1691526164]
+position = Vector2(23, 0)
+
+[node name="Marker2D2" type="Marker2D" parent="SpawnPoints" unique_id=1399554906]
+position = Vector2(46, 0)
+
+[node name="Marker2D3" type="Marker2D" parent="SpawnPoints" unique_id=317081938]
+position = Vector2(67, 0)
+
+[node name="Marker2D4" type="Marker2D" parent="SpawnPoints" unique_id=1651983807]
+position = Vector2(95, 0)
+
+[node name="Marker2D5" type="Marker2D" parent="SpawnPoints" unique_id=1220056548]
+position = Vector2(-25, 0)
+
+[node name="Marker2D6" type="Marker2D" parent="SpawnPoints" unique_id=251900268]
+position = Vector2(-47, 0)
+
+[node name="Marker2D7" type="Marker2D" parent="SpawnPoints" unique_id=411018362]
+position = Vector2(-77, 0)
+
+[node name="Marker2D8" type="Marker2D" parent="SpawnPoints" unique_id=335562944]
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

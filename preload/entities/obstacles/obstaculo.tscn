@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://b7chpo4deuptr"]
+
+[ext_resource type="Script" uid="uid://b5pro5hwjxgj2" path="res://entities/obstacles/obstaculo.gd" id="1_parxj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yoinn"]
+size = Vector2(40, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc832"]
+size = Vector2(32, 32)
+
+[node name="Obstaculo" type="RigidBody2D" unique_id=1953160630]
+scale = Vector2(0.4399999, 0.4000005)
+collision_layer = 4
+collision_mask = 0
+gravity_scale = 0.5
+lock_rotation = true
+script = ExtResource("1_parxj")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=611705441]
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(1, 0, 0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1736291794]
+shape = SubResource("RectangleShape2D_yoinn")
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=302808517]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=369464908]
+shape = SubResource("RectangleShape2D_fc832")
+
+[connection signal="body_entered" from="Hitbox" to="." method="_on_hitbox_body_entered"]

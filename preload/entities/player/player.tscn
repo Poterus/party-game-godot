@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bv020hu1daru"]
+
+[ext_resource type="Script" uid="uid://db0pnc0vicdod" path="res://entities/player/player.gd" id="1_symyc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sfv1e"]
+
+[node name="Player" type="CharacterBody2D" unique_id=1665306505]
+collision_mask = 2
+script = ExtResource("1_symyc")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1261001332]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2006177913]
+shape = SubResource("RectangleShape2D_sfv1e")

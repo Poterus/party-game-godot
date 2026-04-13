@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Súper Mando Dinámico</title>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: #111; font-family: sans-serif; color: white; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; }
+        #top-bar { padding: 10px; text-align: center; background-color: #000; font-size: 1rem; color: #888;}
+        
+        /* PANTALLAS (Layouts) */
+        .pantalla { display: none; width: 100%; flex-grow: 1; }
+        
+        /* 1. Pantalla de Espera */
+        #pantalla-espera { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #btn-join { background-color: #f1c40f; color: black; padding: 20px 40px; font-size: 1.5rem; border-radius: 15px; border: none; font-weight: bold;}
+        
+        /* 2. Layout: Botones Izquierda/Derecha + Acción */
+        #layout-botones { flex-direction: row; }
+        #left-hand-btns { display: flex; flex-direction: row; width: 50%; border-right: 4px solid #000; }
+        .btn-dir { flex: 1; background-color: #2980b9; border: none; font-size: 4rem; color: white; border-right: 2px solid #1a5276;}
+        #btn-right { background-color: #3498db; }
+        
+        /* 3. Layout: Joystick + Acción */
+        #layout-joystick { flex-direction: row; }
+        #joy-zone { width: 50%; position: relative; border-right: 4px solid #000; }
+        #joy-base { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); display: none; pointer-events: none; }
+        #joy-stick { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: #3498db; transform: translate(-50%, -50%); pointer-events: none; }
+        
+        /* Zona de Acción (Compartida por layouts 2 y 3) */
+        .right-hand-action { display: flex; width: 50%; padding: 10px; box-sizing: border-box;}
+        .btn-dash { flex: 1; background-color: #e74c3c; border: none; border-radius: 20px; font-size: 2.5rem; font-weight: bold; color: white; touch-action: none;}
+        
+        /* 4. NUEVO Layout: Solo UN Botón Gigante */
+        #layout-un-boton { padding: 20px; box-sizing: border-box; }
+        #btn-gigante { width: 100%; height: 100%; background-color: #e74c3c; border: none; border-radius: 30px; font-size: 4rem; font-weight: bold; color: white; box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2); touch-action: none;}
+        
+        .active-btn { filter: brightness(0.6); transform: scale(0.95); }
+        .active-gigante { filter: brightness(0.7); transform: scale(0.98); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2) !important; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="top-bar">Jugador: Esperando...</div>
+    
+    <div id="pantalla-espera" class="pantalla" style="display: flex;">
+        <button id="btn-join">Unirse a la partida</button>
+        <p id="txt-espera" style="display:none; font-size: 1.5rem; color: #f1c40f;">¡Esperando al Host!</p>
+    </div>
+
+    <div id="layout-botones" class="pantalla">
+        <div id="left-hand-btns">
+            <button class="btn-dir control-btn" data-action="left">◀</button>
+            <button class="btn-dir control-btn" data-action="right" id="btn-right">▶</button>
+        </div>
+        <div class="right-hand-action">
+            <button class="btn-dash control-btn" data-action="dash">ACCIÓN</button>
+        </div>
+    </div>
+
+    <div id="layout-joystick" class="pantalla">
+        <div id="joy-zone">
+            <div id="joy-base"><div id="joy-stick"></div></div>
+        </div>
+        <div class="right-hand-action">
+            <button class="btn-dash control-btn" data-action="dash">ACCIÓN</button>
+        </div>
+    </div>
+    
+    <div id="layout-un-boton" class="pantalla">
+        <button id="btn-gigante" class="control-btn" data-action="dash">¡PULSA!</button>
+    </div>
+
+    <script>
+        // NUEVO: Captura la IP automáticamente de la URL. Si lo abres como archivo local, usa localhost.
+        const IP_DEL_PC = window.location.hostname || "127.0.0.1"; 
+        let ws;
+        let wakeLock = null; // Variable para el bloqueo de pantalla
+
+        const topBar = document.getElementById("top-bar");
+        const btnJoin = document.getElementById("btn-join");
+        const txtEspera = document.getElementById("txt-espera");
+
+        function cambiarLayout(nombreLayout) {
+            document.querySelectorAll('.pantalla').forEach(p => p.style.display = 'none');
+            
+            if(nombreLayout === "espera") document.getElementById("pantalla-espera").style.display = "flex";
+            if(nombreLayout === "botones") document.getElementById("layout-botones").style.display = "flex";
+            if(nombreLayout === "joystick") document.getElementById("layout-joystick").style.display = "flex";
+            if(nombreLayout === "un_boton") document.getElementById("layout-un-boton").style.display = "block"; 
+        }
+
+        function conectar() {
+            ws = new WebSocket(`ws://${IP_DEL_PC}:8080`);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if(data.type === "welcome") {
+                    topBar.innerText = "Jugador " + data.player_id;
+                    btnJoin.style.display = "none";
+                    txtEspera.style.display = "block";
+                }
+                if(data.type === "change_layout") cambiarLayout(data.layout);
+            };
+            ws.onclose = () => { setTimeout(conectar, 3000); };
+        }
+
+        // NUEVO: Al pulsar "Unirse", pedimos pantalla completa y encendemos el Wake Lock
+        btnJoin.onclick = async () => { 
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "join" }));
+                
+                // Pedir Pantalla Completa
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch((e) => console.log("Error Fullscreen:", e));
+                }
+                
+                // Pedir Wake Lock (Mantener pantalla encendida)
+                try {
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    }
+                } catch (err) {
+                    console.log("Error WakeLock:", err);
+                }
+            }
+        };
+
+        function sendInput(actionName, stateName) {
+            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "input", action: actionName, state: stateName }));
+        }
+
+        function sendJoystick(axisX, axisY) {
+            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "joystick", axis_x: axisX, axis_y: axisY }));
+        }
+
+        function vibrarMando() {
+            // NUEVO: Hace vibrar el móvil 50ms (si el navegador y el dispositivo lo soportan)
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Eventos para los botones
+        document.querySelectorAll('.control-btn').forEach(btn => {
+            const action = btn.getAttribute('data-action');
+            const activeClass = btn.id === "btn-gigante" ? "active-gigante" : "active-btn";
+            
+            btn.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                btn.classList.add(activeClass); 
+                vibrarMando(); // NUEVO: Llamamos a la vibración aquí
+                sendInput(action, "pressed"); 
+            }, {passive: false});
+            
+            btn.addEventListener('touchend', (e) => { 
+                e.preventDefault(); 
+                btn.classList.remove(activeClass); 
+                sendInput(action, "released"); 
+            }, {passive: false});
+        });
+
+        // Eventos del Joystick
+        const joyZone = document.getElementById('joy-zone'), joyBase = document.getElementById('joy-base'), joyStick = document.getElementById('joy-stick');
+        let joyActive = false, joyTouchId = null, joyCenter = { x: 0, y: 0 }, lastSendTime = 0;
+
+        joyZone.addEventListener('touchstart', (e) => {
+            e.preventDefault(); if (joyActive) return;
+            vibrarMando(); // NUEVO: Vibra al clavar el dedo para mover el joystick
+            const t = e.changedTouches[0]; joyTouchId = t.identifier; joyActive = true;
+            const r = joyZone.getBoundingClientRect(); joyCenter = { x: t.clientX - r.left, y: t.clientY - r.top };
+            joyBase.style.display = 'block'; joyBase.style.left = joyCenter.x + 'px'; joyBase.style.top = joyCenter.y + 'px';
+            joyStick.style.left = '60px'; joyStick.style.top = '60px'; sendJoystick(0, 0);
+        });
+        joyZone.addEventListener('touchmove', (e) => {
+            e.preventDefault(); if (!joyActive) return;
+            let t = Array.from(e.changedTouches).find(t => t.identifier === joyTouchId); if (!t) return;
+            const r = joyZone.getBoundingClientRect(); let dx = (t.clientX - r.left) - joyCenter.x, dy = (t.clientY - r.top) - joyCenter.y;
+            const dist = Math.sqrt(dx * dx + dy * dy); if (dist > 60) { dx = (dx / dist) * 60; dy = (dy / dist) * 60; }
+            joyStick.style.left = (60 + dx) + 'px'; joyStick.style.top = (60 + dy) + 'px';
+            const now = Date.now(); if (now - lastSendTime > 50) { sendJoystick(parseFloat((dx/60).toFixed(2)), parseFloat((dy/60).toFixed(2))); lastSendTime = now; }
+        });
+        joyZone.addEventListener('touchend', (e) => {
+            e.preventDefault(); if (!joyActive) return;
+            if (Array.from(e.changedTouches).find(t => t.identifier === joyTouchId)) { joyActive = false; joyTouchId = null; joyBase.style.display = 'none'; sendJoystick(0, 0); }
+        });
+
+        conectar();
+    </script>
+</body>
+</html>

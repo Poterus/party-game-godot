@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b6pc8p20tir2q"]
+
+[ext_resource type="Script" uid="uid://brpfv3mya02hi" path="res://tests/test_coop.gd" id="1_vsram"]
+
+[node name="TestCoop" type="Node2D" unique_id=1526565337]
+script = ExtResource("1_vsram")
