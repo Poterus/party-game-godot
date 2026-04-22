@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://cmjjrlrqo138q"]
+
+[ext_resource type="Script" uid="uid://dpu4831ki0k7m" path="res://entities/spawn/spawn_manager.gd" id="1_uf0p4"]
+
+[node name="SpawnManager" type="Node2D" unique_id=817185156]
+script = ExtResource("1_uf0p4")
+
+[node name="Marker2D" type="Marker2D" parent="." unique_id=2046985293]
+position = Vector2(23, 0)
+
+[node name="Marker2D2" type="Marker2D" parent="." unique_id=668244985]
+position = Vector2(46, 0)
+
+[node name="Marker2D3" type="Marker2D" parent="." unique_id=133891716]
+position = Vector2(67, 0)
+
+[node name="Marker2D4" type="Marker2D" parent="." unique_id=1292613219]
+position = Vector2(95, 0)
+
+[node name="Marker2D5" type="Marker2D" parent="." unique_id=1051333644]
+position = Vector2(-25, 0)
+
+[node name="Marker2D6" type="Marker2D" parent="." unique_id=1829993272]
+position = Vector2(-47, 0)
+
+[node name="Marker2D7" type="Marker2D" parent="." unique_id=1569899478]
+position = Vector2(-77, 0)
+
+[node name="Marker2D8" type="Marker2D" parent="." unique_id=1911121881]
