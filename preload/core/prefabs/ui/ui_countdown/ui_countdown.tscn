@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://ciidoisjd0qv5"]
+
+[ext_resource type="Script" uid="uid://c7fc7d2nqtl28" path="res://core/prefabs/ui/ui_countdown/ui_countdown.gd" id="1_5fyuw"]
+
+[node name="CountdownUI" type="CanvasLayer" unique_id=318720001]
+script = ExtResource("1_5fyuw")
+
+[node name="CountdownTimer" type="Timer" parent="." unique_id=1040407826]
+
+[node name="Main" type="Control" parent="." unique_id=427225724]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NumberLabel" type="Label" parent="Main" unique_id=909363384]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 112.0
+offset_right = 343.0
+offset_bottom = 238.0
+theme_override_font_sizes/font_size = 168
+text = "3"
+
+[connection signal="timeout" from="CountdownTimer" to="." method="_on_countdown_timer_timeout"]

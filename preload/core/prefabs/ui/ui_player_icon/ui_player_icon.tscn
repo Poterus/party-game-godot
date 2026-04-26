@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dh5ntrnt3pde7"]
+
+[ext_resource type="Script" uid="uid://d10l6hiyt365i" path="res://core/prefabs/ui/ui_player_icon/ui_player_icon.gd" id="1_grh37"]
+
+[node name="UiPlayerIcon" type="PanelContainer" unique_id=477641192]
+custom_minimum_size = Vector2(32, 32)
+offset_right = 64.0
+offset_bottom = 64.0
+script = ExtResource("1_grh37")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1825171548]
+layout_mode = 2
+
+[node name="FaceImage" type="TextureRect" parent="." unique_id=1643363113]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DeathCross" type="ColorRect" parent="." unique_id=451581578]
+visible = false
+layout_mode = 2
+color = Color(0.79607844, 0, 0, 0.56078434)

@@ -186,9 +186,6 @@ func _setup_host_pc_controls() -> void:
 			key_event.keycode = key_code
 			InputMap.action_add_event(action, key_event)
 			
-	var mouse_event = InputEventMouseButton.new()
-	mouse_event.button_index = MOUSE_BUTTON_LEFT
-	InputMap.action_add_event("dash_1", mouse_event)
 
 # Función para testear sin móviles (Ya está bien tabulada y separada de lo anterior)
 func debug_add_fake_player() -> void:

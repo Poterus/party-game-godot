@@ -9,6 +9,7 @@ enum ControllerMode { HORIZONTAL, TOP_DOWN }
 @export var FRICTION = 0.15 
 @export var ACCELERATION = 0.3
 
+var can_move: bool = false # Nacen petrificados
 # --- NUEVO: Obtenemos la gravedad oficial de tu proyecto ---
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 
@@ -16,6 +17,16 @@ var my_player_id: int = 1
 var is_dashing: bool = false
 
 func _physics_process(delta: float) -> void:
+	# --- CANDADO DE MOVIMIENTO ---
+	if not can_move:
+		# Dejamos que la gravedad actúe para que caigan al suelo al spawnear, 
+		# pero no les dejamos moverse ni hacer Dash.
+		if not is_on_floor():
+			velocity.y += gravity * delta
+			move_and_slide()
+		return 
+		
+	# ... (AQUÍ SIGUE TU CÓDIGO NORMAL DEL DASH Y JOYSTICK) ...
 	if is_dashing:
 		move_and_slide()
 		return

@@ -3,7 +3,10 @@
 [ext_resource type="Script" uid="uid://b1cc7j0neo3vr" path="res://minigames/yunque/yunque.gd" id="1_b1vk7"]
 [ext_resource type="PackedScene" uid="uid://b7chpo4deuptr" path="res://entities/obstacles/obstaculo.tscn" id="2_stvyv"]
 [ext_resource type="PackedScene" uid="uid://bv020hu1daru" path="res://entities/player/player.tscn" id="3_b1vk7"]
-[ext_resource type="PackedScene" uid="uid://cmjjrlrqo138q" path="res://entities/spawn/spawn_manager.tscn" id="3_stvyv"]
+[ext_resource type="PackedScene" uid="uid://cmjjrlrqo138q" path="res://core/prefabs/spawn/spawn_manager.tscn" id="3_stvyv"]
+[ext_resource type="PackedScene" uid="uid://ciidoisjd0qv5" path="res://core/prefabs/ui/ui_countdown/ui_countdown.tscn" id="5_8vd1f"]
+[ext_resource type="PackedScene" uid="uid://cohsmayny1c8w" path="res://core/prefabs/ui/ui_victory/ui_victory.tscn" id="6_clata"]
+[ext_resource type="PackedScene" uid="uid://d1jr2837buub0" path="res://core/prefabs/ui/ui_hud/ui_hud.tscn" id="7_733jj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4dvvg"]
 size = Vector2(1312, 16)
@@ -28,10 +31,26 @@ position = Vector2(0, 1)
 shape = SubResource("RectangleShape2D_4dvvg")
 
 [node name="Timer" type="Timer" parent="." unique_id=1136560577]
-autostart = true
 
 [node name="SpawnManager" parent="." unique_id=817185156 instance=ExtResource("3_stvyv")]
 position = Vector2(305, 331)
 player_scene = ExtResource("3_b1vk7")
 
+[node name="CountdownUI" parent="." unique_id=318720001 instance=ExtResource("5_8vd1f")]
+
+[node name="UIVictory" parent="." unique_id=1742060317 instance=ExtResource("6_clata")]
+visible = false
+
+[node name="DebugKillButton" type="Button" parent="." unique_id=313006638]
+offset_left = 461.0
+offset_top = 63.0
+offset_right = 522.0
+offset_bottom = 108.0
+focus_mode = 0
+text = "Kill Player"
+
+[node name="UiHud" parent="." unique_id=1402551547 instance=ExtResource("7_733jj")]
+
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="countdown_finished" from="CountdownUI" to="." method="_on_countdown_ui_countdown_finished"]
+[connection signal="pressed" from="DebugKillButton" to="." method="_on_debug_kill_button_pressed"]

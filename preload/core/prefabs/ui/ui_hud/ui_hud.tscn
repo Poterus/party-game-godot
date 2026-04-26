@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://d1jr2837buub0"]
+
+[ext_resource type="Script" uid="uid://b6lnht7wheq80" path="res://core/prefabs/ui/ui_hud/ui_hud.gd" id="1_tclh0"]
+[ext_resource type="PackedScene" uid="uid://dh5ntrnt3pde7" path="res://core/prefabs/ui/ui_player_icon/ui_player_icon.tscn" id="2_b6iaf"]
+
+[node name="UiHud" type="CanvasLayer" unique_id=1402551547]
+layer = 10
+script = ExtResource("1_tclh0")
+player_icon_scene = ExtResource("2_b6iaf")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1122399]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="IconContainer" type="HBoxContainer" parent="MarginContainer" unique_id=155846190]
+unique_name_in_owner = true
+layout_mode = 2
