@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Preload"
+config/name="Godot_party_game"
 run/main_scene="uid://dsjv8iv4trh5c"
 config/features=PackedStringArray("4.6")
 config/icon="res://assets/sprites/icon.svg"
@@ -21,8 +21,8 @@ NetworkManager="*uid://dc311d7bfriby"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
+window/size/viewport_width=480
+window/size/viewport_height=270
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="viewport"

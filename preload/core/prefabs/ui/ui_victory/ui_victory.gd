@@ -34,6 +34,7 @@ func show_singleplayer_score(time_survived: float):
 func _on_retry_pressed():
 	# Recarga la escena actual en la que estés (el minijuego actual)
 	get_tree().reload_current_scene()
+	queue_free() # Nos eliminamos a nosotros mismos para asegurar limpieza
 
 func _on_pick_game_pressed():
 	# Vuelve a la pantalla de selección de minijuegos
@@ -42,3 +43,4 @@ func _on_pick_game_pressed():
 func _on_exit_menu_pressed():
 	# Vuelve al menú principal o de modos
 	get_tree().change_scene_to_file("res://ui/menus/mode_selection/mode_selection.tscn")
+	queue_free()

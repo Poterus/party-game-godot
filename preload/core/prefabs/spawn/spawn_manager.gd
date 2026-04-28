@@ -2,11 +2,12 @@ extends Node2D
 
 @export var player_scene: PackedScene
 
-func spawn_all_players(play_mode: String, host_on_pc: bool, connected_count: int) -> int:
+# Ahora esta función devuelve un Array con los nodos de los jugadores creados
+func spawn_all_players(play_mode: String, host_on_pc: bool, connected_count: int) -> Array:
 	var markers = get_children()
 	var players_to_spawn = []
+	var spawned_nodes = [] # <--- Lista para guardar los que vamos creando
 	
-	# Lógica de IDs que ya conocemos
 	if play_mode == "solo":
 		players_to_spawn = [1]
 	else:
@@ -15,22 +16,20 @@ func spawn_all_players(play_mode: String, host_on_pc: bool, connected_count: int
 		for i in range(connected_count):
 			players_to_spawn.append(offset + i)
 
-	# El Spaneo real
 	for i in range(players_to_spawn.size()):
 		if i < markers.size():
-			_create_player(players_to_spawn[i], markers[i].global_position)
+			var p = _create_player(players_to_spawn[i], markers[i].global_position)
+			spawned_nodes.append(p)
 	
-	return players_to_spawn.size() # Devolvemos cuántos hay vivos
+	# Devolvemos la lista de nodos reales, no un número
+	return spawned_nodes 
 
-func _create_player(id: int, pos: Vector2):
+func _create_player(id: int, pos: Vector2) -> Node2D:
 	var p = player_scene.instantiate()
 	p.my_player_id = id
 	p.global_position = pos
 	p.name = "Player_" + str(id)
 	
-	# Color automático por ID
-	var sprite = p.get_node_or_null("Sprite2D")
-	if sprite: sprite.modulate = Color.from_hsv(id * 0.125, 0.8, 1.0)
-	
-	# Lo añadimos al nivel (owner es el nivel donde soltaste el manager)
+	# Lo añadimos directamente para que el nivel pueda acceder a él al instante
 	get_parent().add_child(p)
+	return p

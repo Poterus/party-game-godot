@@ -1,6 +1,6 @@
 extends Area2D
 
-@export var fall_speed: float = 400.0 # Velocidad constante hacia abajo
+@export var fall_speed: float = 250.0 # Velocidad constante hacia abajo
 
 func _ready() -> void:
 	# Conectamos la señal de detección de cuerpos
