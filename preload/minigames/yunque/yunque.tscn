@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://d1jr2837buub0" path="res://core/prefabs/ui/ui_hud/ui_hud.tscn" id="7_733jj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4dvvg"]
-size = Vector2(664, 16)
+size = Vector2(499, 16)
 
 [node name="GameYunque" type="Node2D" unique_id=1340176064 node_paths=PackedStringArray("spawn_manager", "countdown_ui", "hud_ui")]
 script = ExtResource("1_b1vk7")
@@ -24,20 +24,26 @@ position = Vector2(206, 263)
 collision_layer = 2
 
 [node name="ColorRect" type="ColorRect" parent="StaticBody2D" unique_id=648527535]
-offset_left = -654.0
-offset_top = -7.0
-offset_right = 618.0
-offset_bottom = 8.0
-metadata/_edit_use_anchors_ = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -221.0
+offset_top = -9.0
+offset_right = 279.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=2003327132]
-position = Vector2(94, 1)
+position = Vector2(27.5, -2)
 shape = SubResource("RectangleShape2D_4dvvg")
 
 [node name="Timer" type="Timer" parent="." unique_id=1136560577]
 
 [node name="SpawnManager" parent="." unique_id=817185156 instance=ExtResource("3_stvyv")]
-position = Vector2(232, 242)
+position = Vector2(232, 237)
 player_scene = ExtResource("3_b1vk7")
 
 [node name="CountdownUI" parent="." unique_id=318720001 instance=ExtResource("5_8vd1f")]

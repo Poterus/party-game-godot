@@ -18,10 +18,15 @@ var is_game_over: bool = false
 func _ready() -> void:
 	# 1. Spawneamos a los jugadores
 	is_solo_mode = (NetworkManager.current_play_mode == "solo")
+	
+	# CAMBIO AQUÍ: En lugar de connected_phones.size(), usamos player_faces.size()
+	# Esto incluye a los bots de debug y a los jugadores reales que ya tienen foto.
+	var total_players = NetworkManager.player_faces.size()
+	
 	var spawned_players = spawn_manager.spawn_all_players(
 		NetworkManager.current_play_mode, 
 		NetworkManager.host_plays_on_pc, 
-		NetworkManager.connected_phones.size()
+		total_players # <--- Ahora esto enviará el número correcto (ej: 3 si diste 3 veces al botón)
 	)
 	
 	players_alive = spawned_players.size()

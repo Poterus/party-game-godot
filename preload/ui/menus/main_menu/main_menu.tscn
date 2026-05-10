@@ -40,35 +40,35 @@ alignment = 1
 [node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1986039935]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 27
 text = "PARTY GAME"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1789139409]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 
 [node name="ButtonLocal" type="Button" parent="MarginContainer/VBoxContainer" unique_id=2043592100]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Play Local"
 
 [node name="ButtonOnline" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1227605337]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Play Online"
 
 [node name="ButtonSingle" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1577292586]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Singleplayer"
 
 [node name="ButtonOptions" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1998634677]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Options"
 
 [node name="ButtonQuit" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1520848526]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Quit game"

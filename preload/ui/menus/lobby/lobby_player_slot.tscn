@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://gvln2csnw83e"]
+
+[ext_resource type="Script" uid="uid://b8a58e8bomd2q" path="res://ui/menus/lobby/lobby_player_slot.gd" id="1_4xvwd"]
+[ext_resource type="PackedScene" uid="uid://tq1ptkbrqoma" path="res://entities/player_dummy/player_dummy.tscn" id="1_pm0x5"]
+
+[node name="PlayerSlot" type="PanelContainer" unique_id=592237398]
+script = ExtResource("1_4xvwd")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=197333549]
+layout_mode = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer" unique_id=259637849]
+texture_filter = 1
+custom_minimum_size = Vector2(64, 80)
+layout_mode = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="VBoxContainer/SubViewportContainer" unique_id=1365457498]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(64, 80)
+render_target_update_mode = 4
+
+[node name="PlayerDummy" parent="VBoxContainer/SubViewportContainer/SubViewport" unique_id=1201298819 instance=ExtResource("1_pm0x5")]
+texture_filter = 1
+position = Vector2(32, 32)
+scale = Vector2(2, 2)
+
+[node name="NameLabel" type="Label" parent="VBoxContainer" unique_id=1274802806]
+layout_mode = 2
+text = "Jose"

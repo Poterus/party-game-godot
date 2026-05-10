@@ -3,18 +3,19 @@ extends Node
 # ==========================================
 # MEMORIA Y ESTADO GLOBAL
 # ==========================================
-var current_play_mode: String = "solo" # Puede ser: "solo", "local", o "online"
-var host_plays_on_pc: bool = true # <-- ¡AQUÍ ESTÁ LA VARIABLE QUE FALTABA!
+var current_play_mode: String = "solo" # "solo", "local", "online"
+var host_plays_on_pc: bool = false 
 
-# Aquí guardaremos la posición exacta del joystick de cada jugador
+# Diccionarios de estado de los jugadores
 var player_joysticks: Dictionary = {}
+var player_faces: Dictionary = {} # NUEVO: Guardará el ImageTexture con la cara del jugador. Clave = player_id
 
-# --- SERVIDOR WEBSOCKET (Para jugar) ---
+# --- SERVIDOR WEBSOCKET (Juego) ---
 const WS_PORT = 8080
 var ws_server := TCPServer.new()
-var connected_phones: Array = [] # Array genérico para permitir jugadores falsos
+var connected_phones: Array = [] 
 
-# --- SERVIDOR HTTP (Para enviar el HTML del mando) ---
+# --- SERVIDOR HTTP (Web del Mando) ---
 const HTTP_PORT = 8000
 var http_server := TCPServer.new()
 var web_clients: Array[StreamPeerTCP] = []
@@ -23,37 +24,36 @@ var html_content: String = ""
 # --- SEÑALES ---
 signal player_joined(player_id: int)
 signal player_joystick(player_id: int, axis_x: float, axis_y: float)
+signal player_face_updated(player_id: int, texture: ImageTexture) # NUEVO: Avisa cuando llega una foto
 
 # ==========================================
 # INICIO Y BUCLE PRINCIPAL
 # ==========================================
 func _ready() -> void:
 	_setup_host_pc_controls()
-	# 1. Cargar el archivo HTML a la memoria
 	_load_html_file()
 	
-	# 2. Iniciar el servidor WebSocket (El juego)
 	if ws_server.listen(WS_PORT) == OK:
 		print("✅ Servidor WebSocket en puerto ", WS_PORT)
-	
-	# 3. Iniciar el servidor HTTP (La web)
 	if http_server.listen(HTTP_PORT) == OK:
 		print("🌐 Servidor Web (HTML) en puerto ", HTTP_PORT)
 
 func _load_html_file() -> void:
-	var file = FileAccess.open("res://web/index.html", FileAccess.READ)
-	if file:
+	var path = "res://web/index.html"
+	if FileAccess.file_exists(path):
+		var file = FileAccess.open(path, FileAccess.READ)
 		html_content = file.get_as_text()
 		file.close()
 	else:
-		push_error("❌ No se encontró el index.html en res://web/index.html")
+		push_error("❌ No se encontró el index.html en: ", path)
+		html_content = "<h1>Error: Falta index.html</h1>"
 
 func _process(_delta: float) -> void:
 	_process_http_server()
 	_process_websocket_server()
 
 # ==========================================
-# LÓGICA DEL SERVIDOR WEB (Entrega el Mando)
+# LÓGICA DEL SERVIDOR WEB
 # ==========================================
 func _process_http_server() -> void:
 	if http_server.is_connection_available():
@@ -69,14 +69,16 @@ func _process_http_server() -> void:
 				var request = client.get_utf8_string(client.get_available_bytes())
 				if request.begins_with("GET"):
 					_send_html_response(client)
-
 		elif client.get_status() != StreamPeerTCP.STATUS_CONNECTED:
 			web_clients.remove_at(i)
 			
 func _send_html_response(peer: StreamPeerTCP) -> void:
 	var body_bytes = html_content.to_utf8_buffer()
+	
+	# Mejoramos las cabeceras HTTP para navegadores móviles
 	var header = "HTTP/1.1 200 OK\r\n"
 	header += "Content-Type: text/html; charset=UTF-8\r\n"
+	header += "Cache-Control: no-cache, no-store, must-revalidate\r\n" # Evita que los móviles guarden webs viejas
 	header += "Content-Length: " + str(body_bytes.size()) + "\r\n"
 	header += "Connection: close\r\n\r\n"
 	
@@ -85,23 +87,19 @@ func _send_html_response(peer: StreamPeerTCP) -> void:
 	OS.delay_msec(10)
 	
 # ==========================================
-# LÓGICA DEL WEBSOCKET (Recibe y Responde)
+# LÓGICA DEL WEBSOCKET
 # ==========================================
 func _process_websocket_server() -> void:
-	# 1. Aceptar nuevos móviles
 	if ws_server.is_connection_available():
 		var tcp_peer: StreamPeerTCP = ws_server.take_connection()
 		var ws := WebSocketPeer.new()
 		ws.accept_stream(tcp_peer)
 		connected_phones.append(ws)
-		print("📱 ¡Nuevo dispositivo conectado al WebSocket!")
+		print("📱 ¡Nuevo dispositivo conectado!")
 
-	# 2. Leer los mensajes
 	for i in range(connected_phones.size() - 1, -1, -1):
 		var ws = connected_phones[i]
-		
-		# ESCUDO: Si es un jugador falso de Debug, no intentamos leer su red
-		if typeof(ws) == TYPE_STRING:
+		if typeof(ws) == TYPE_STRING: # Skip jugadores de debug
 			continue
 			
 		ws.poll()
@@ -109,65 +107,97 @@ func _process_websocket_server() -> void:
 		
 		if state == WebSocketPeer.STATE_OPEN:
 			while ws.get_available_packet_count() > 0:
-				# Quitamos los ":" para que Godot no exija un tipo estricto
-				var packet = ws.get_packet() 
+				var packet = ws.get_packet()
 				var message = packet.get_string_from_utf8()
 				
+				# --- CHIVATO DE TAMAÑO ---
+				print("📦 Paquete recibido. Tamaño: ", packet.size(), " bytes")
+				
 				var data = JSON.parse_string(message)
+				
 				if typeof(data) == TYPE_DICTIONARY:
+					# --- CHIVATO DE TIPO ---
+					print("✉️ Mensaje tipo: ", data.get("type", "desconocido"))
 					_handle_phone_message(ws, data)
 				else:
-					print("Mensaje no reconocido: ", message)
-				
+					# --- CHIVATO DE ERROR ---
+					print("❌ ERROR: Llegó algo que no es un JSON válido.")
+					
 		elif state == WebSocketPeer.STATE_CLOSED:
-			print("Un mando se ha desconectado.")
+			print("Desconexión. Limpiando datos...")
+			# Idealmente aquí emitiríamos una señal de player_left
 			connected_phones.remove_at(i)
 
 # ==========================================
-# EL CEREBRO DE LOS INPUTS (Traductor JSON)
+# GESTIÓN DE JUGADORES E INPUTS
 # ==========================================
+
+# Función auxiliar MUY IMPORTANTE para unificar cómo calculamos el ID
+func _get_player_id_from_ws(ws) -> int:
+	var index = connected_phones.find(ws)
+	if host_plays_on_pc:
+		return index + 2 # El Host es el 1, los móviles empiezan en el 2
+	else:
+		return index + 1 # Todos son móviles, empiezan en el 1
+
 func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 	if not data.has("type"): return
 	
+	var player_id = _get_player_id_from_ws(ws)
+	
 	match data["type"]:
 		"join":
-			var phone_index = connected_phones.find(ws)
-			var player_id = 0
-			
-			if host_plays_on_pc:
-				player_id = phone_index + 2
-			else:
-				player_id = phone_index + 1
-				
 			print("Jugador ", player_id, " ha pulsado Unirse.")
-			
-			var welcome_msg = {"type": "welcome", "player_id": player_id}
 			if typeof(ws) == TYPE_OBJECT:
-				ws.send_text(JSON.stringify(welcome_msg))
-				var layout_msg = {"type": "change_layout", "layout": "joystick"}
-				ws.send_text(JSON.stringify(layout_msg))
-			
+				# Solo le damos la bienvenida. El index.html se encargará de mostrar la cámara.
+				ws.send_text(JSON.stringify({"type": "welcome", "player_id": player_id}))
 			player_joined.emit(player_id)
 			
 		"input":
-			var player_id = connected_phones.find(ws) + 1
 			var action_name = data["action"] + "_" + str(player_id) 
 			var is_pressed = data["state"] == "pressed"
 			
-			if not InputMap.has_action(action_name):
-				InputMap.add_action(action_name)
+			if not InputMap.has_action(action_name): InputMap.add_action(action_name)
 				
-			if is_pressed:
-				Input.action_press(action_name)
-			else:
-				Input.action_release(action_name)
+			if is_pressed: Input.action_press(action_name)
+			else: Input.action_release(action_name)
 				
 		"joystick":
-			var player_id = connected_phones.find(ws) + 1
 			player_joysticks[player_id] = Vector2(float(data["axis_x"]), float(data["axis_y"]))
+			
+		# NUEVO: Lógica para procesar la foto de la cara
+		"face_photo":
+			if data.has("data"):
+				_process_face_photo(player_id, data["data"])
+
+func _process_face_photo(player_id: int, base64_data: String) -> void:
+	# 1. Convertir Base64 a raw bytes
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		push_error("Error decodificando la foto Base64 del jugador ", player_id)
+		return
+		
+	# 2. Intentar cargar los bytes como JPG
+	var image := Image.new()
+	var error = image.load_jpg_from_buffer(raw_data)
+	
+	if error == OK:
+		# 3. Crear una textura
+		var texture = ImageTexture.create_from_image(image)
+		
+		# 4. TRUCO PIXEL ART: Anulamos el filtro de suavizado para que encaje con el juego
+		# (Aunque en Godot 4 esto se suele manejar en los Project Settings o en el CanvasItem, 
+		# no viene mal recordarlo. Si tu juego es Pixel Art, la foto no desentonará).
+		
+		# 5. Guardamos en el diccionario y avisamos al resto del juego
+		player_faces[player_id] = texture
+		player_face_updated.emit(player_id, texture)
+		print("📸 Foto recibida y procesada con éxito para Jugador ", player_id)
+	else:
+		push_error("Error convirtiendo bytes a imagen. Código: ", error)
 
 # ==========================================
-# CONTROLES DE PC Y HERRAMIENTAS DE DEBUG
+# CONTROLES Y HERRAMIENTAS
 # ==========================================
 func _setup_host_pc_controls() -> void:
 	var pc_controls = {
@@ -177,38 +207,39 @@ func _setup_host_pc_controls() -> void:
 		"right_1": [KEY_D, KEY_RIGHT],
 		"dash_1": [KEY_SPACE, KEY_ENTER]
 	}
-	
 	for action in pc_controls:
-		if not InputMap.has_action(action):
-			InputMap.add_action(action)
+		if not InputMap.has_action(action): InputMap.add_action(action)
 		for key_code in pc_controls[action]:
 			var key_event = InputEventKey.new()
 			key_event.keycode = key_code
 			InputMap.action_add_event(action, key_event)
 			
 
-# Función para testear sin móviles (Ya está bien tabulada y separada de lo anterior)
 func debug_add_fake_player() -> void:
-	if connected_phones.size() < 7:
-		connected_phones.append("fake_socket_debug") 
-		
-		var new_id = 0
-		if host_plays_on_pc:
-			new_id = connected_phones.size() + 1
-		else:
-			new_id = connected_phones.size()
-			
-		player_joined.emit(new_id)
-		print("DEBUG: Jugador falso añadido. ID: ", new_id)
-	else:
-		print("DEBUG: Límite de 8 jugadores alcanzado.")
-
-# Función centralizada para cambiar el mando de todos los móviles
-func send_layout_to_all(layout_name: String) -> void:
-	var msg = {"type": "change_layout", "layout": layout_name}
-	var msg_string = JSON.stringify(msg)
+	# Calculamos la siguiente ID libre inteligentemente
+	var fake_id = 1
+	if not player_faces.is_empty():
+		# Si ya hay gente (móviles o bots), cogemos el número más alto y le sumamos 1
+		var ids = player_faces.keys()
+		ids.sort() # Ordenamos de menor a mayor
+		fake_id = ids[-1] + 1 
 	
+	var default_icon = load("res://assets/sprites/icon.svg")
+	
+	var img = default_icon.get_image()
+	var fake_texture = ImageTexture.create_from_image(img)
+	
+	if not "player_faces" in self:
+		printerr("Aviso: No encontré el diccionario 'player_faces' en NetworkManager.")
+	else:
+		player_faces[fake_id] = fake_texture
+	
+	player_face_updated.emit(fake_id, fake_texture)
+	
+	print("DEBUG: Jugador fantasma añadido de forma segura con ID: ", fake_id)
+	
+func send_layout_to_all(layout_name: String) -> void:
+	var msg_string = JSON.stringify({"type": "change_layout", "layout": layout_name})
 	for ws in connected_phones:
-		# Verificamos que sea un objeto real y no un fake de debug
 		if typeof(ws) == TYPE_OBJECT and ws.has_method("send_text"):
 			ws.send_text(msg_string)

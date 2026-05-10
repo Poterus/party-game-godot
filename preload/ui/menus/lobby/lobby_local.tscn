@@ -65,7 +65,6 @@ layout_mode = 2
 
 [node name="LocalPanel" type="VBoxContainer" parent="MarginContainer/MainVBox/HBox" unique_id=1741409125]
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="LabelInstruction" type="Label" parent="MarginContainer/MainVBox/HBox/LocalPanel" unique_id=628598579]
 layout_mode = 2
@@ -93,6 +92,7 @@ metadata/_custom_type_script = "uid://dynulhnyq5hpq"
 [node name="LabelMobiles" type="Label" parent="MarginContainer/MainVBox/HBox/LocalPanel" unique_id=878237275]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Make sure to be connected to the local wifi of the host.
 If you are unable to connect, try to go to this address manualy:"
 autowrap_mode = 2
@@ -110,21 +110,24 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Players connected"
 
-[node name="ListLocal" type="ItemList" parent="MarginContainer/MainVBox/HBox/SteamPanel" unique_id=806932106]
-custom_minimum_size = Vector2(0, 40)
+[node name="GridPlayers" type="GridContainer" parent="MarginContainer/MainVBox/HBox/SteamPanel" unique_id=1066929194]
 layout_mode = 2
-size_flags_vertical = 3
+columns = 4
 
-[node name="ButtonDebugAdd" type="Button" parent="MarginContainer/MainVBox/HBox/SteamPanel" unique_id=1752420142]
-unique_name_in_owner = true
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/MainVBox" unique_id=1274478596]
 layout_mode = 2
-text = "DEBUG: Add Player"
+alignment = 1
 
-[node name="ButtonStart" type="Button" parent="MarginContainer/MainVBox" unique_id=556827695]
-layout_mode = 2
-text = "Start Game"
-
-[node name="ButtonBack" type="Button" parent="MarginContainer/MainVBox" unique_id=531464224]
+[node name="ButtonBack" type="Button" parent="MarginContainer/MainVBox/HBoxContainer" unique_id=531464224]
 layout_mode = 2
 text = "Back to Menu
 "
+
+[node name="ButtonStart" type="Button" parent="MarginContainer/MainVBox/HBoxContainer" unique_id=556827695]
+layout_mode = 2
+text = "Start Game"
+
+[node name="ButtonDebugAdd" type="Button" parent="MarginContainer/MainVBox/HBoxContainer" unique_id=1752420142]
+unique_name_in_owner = true
+layout_mode = 2
+text = "DEBUG: Add Player"

@@ -8,6 +8,13 @@ offset_right = 64.0
 offset_bottom = 64.0
 script = ExtResource("1_grh37")
 
+[node name="FaceTexture" type="TextureRect" parent="." unique_id=720996410]
+texture_filter = 1
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Background" type="ColorRect" parent="." unique_id=1825171548]
 layout_mode = 2
 

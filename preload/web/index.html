@@ -3,187 +3,1070 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Súper Mando Dinámico</title>
+    <title>SUPER MANDO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: #111; font-family: sans-serif; color: white; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; }
-        #top-bar { padding: 10px; text-align: center; background-color: #000; font-size: 1rem; color: #888;}
-        
-        /* PANTALLAS (Layouts) */
-        .pantalla { display: none; width: 100%; flex-grow: 1; }
-        
-        /* 1. Pantalla de Espera */
-        #pantalla-espera { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #btn-join { background-color: #f1c40f; color: black; padding: 20px 40px; font-size: 1.5rem; border-radius: 15px; border: none; font-weight: bold;}
-        
-        /* 2. Layout: Botones Izquierda/Derecha + Acción */
-        #layout-botones { flex-direction: row; }
-        #left-hand-btns { display: flex; flex-direction: row; width: 50%; border-right: 4px solid #000; }
-        .btn-dir { flex: 1; background-color: #2980b9; border: none; font-size: 4rem; color: white; border-right: 2px solid #1a5276;}
-        #btn-right { background-color: #3498db; }
-        
-        /* 3. Layout: Joystick + Acción */
-        #layout-joystick { flex-direction: row; }
-        #joy-zone { width: 50%; position: relative; border-right: 4px solid #000; }
-        #joy-base { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); display: none; pointer-events: none; }
-        #joy-stick { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: #3498db; transform: translate(-50%, -50%); pointer-events: none; }
-        
-        /* Zona de Acción (Compartida por layouts 2 y 3) */
-        .right-hand-action { display: flex; width: 50%; padding: 10px; box-sizing: border-box;}
-        .btn-dash { flex: 1; background-color: #e74c3c; border: none; border-radius: 20px; font-size: 2.5rem; font-weight: bold; color: white; touch-action: none;}
-        
-        /* 4. NUEVO Layout: Solo UN Botón Gigante */
-        #layout-un-boton { padding: 20px; box-sizing: border-box; }
-        #btn-gigante { width: 100%; height: 100%; background-color: #e74c3c; border: none; border-radius: 30px; font-size: 4rem; font-weight: bold; color: white; box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2); touch-action: none;}
-        
-        .active-btn { filter: brightness(0.6); transform: scale(0.95); }
-        .active-gigante { filter: brightness(0.7); transform: scale(0.98); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2) !important; }
+        /* ============================================================
+           VARIABLES Y RESET
+        ============================================================ */
+        :root {
+            --clr-bg:       #0a0a0f;
+            --clr-panel:    #12121a;
+            --clr-border:   #2a2a3e;
+            --clr-yellow:   #f7d51d;
+            --clr-cyan:     #00e5ff;
+            --clr-pink:     #ff2d78;
+            --clr-green:    #39ff14;
+            --clr-blue:     #1e90ff;
+            --clr-purple:   #9b30ff;
+            --clr-red:      #ff2d2d;
+            --clr-text:     #e0e0ff;
+            --clr-muted:    #555577;
+            --shadow-hard:  4px 4px 0px rgba(0,0,0,0.9);
+            --shadow-glow-y: 0 0 12px rgba(247,213,29,0.6), 0 0 30px rgba(247,213,29,0.25);
+            --shadow-glow-c: 0 0 12px rgba(0,229,255,0.5), 0 0 30px rgba(0,229,255,0.2);
+            --shadow-glow-p: 0 0 12px rgba(255,45,120,0.6), 0 0 30px rgba(255,45,120,0.25);
+            --font-pixel:   'Press Start 2P', monospace;
+            --font-hud:     'Orbitron', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh; /* dynamic viewport height */
+            background-color: var(--clr-bg);
+            background-image:
+                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            font-family: var(--font-pixel);
+            color: var(--clr-text);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           TOP HUD BAR
+        ============================================================ */
+        #top-bar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 44px;
+            background-color: #000;
+            border-bottom: 2px solid var(--clr-border);
+        }
+
+        #top-bar::before {
+            content: '▶ ▶ ▶';
+            font-family: var(--font-pixel);
+            font-size: 0.45rem;
+            color: var(--clr-muted);
+            letter-spacing: 2px;
+        }
+
+        #hud-player-name {
+            font-family: var(--font-hud);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--clr-cyan);
+            text-shadow: var(--shadow-glow-c);
+            letter-spacing: 1px;
+        }
+
+        #top-bar::after {
+            content: '◀ ◀ ◀';
+            font-family: var(--font-pixel);
+            font-size: 0.45rem;
+            color: var(--clr-muted);
+            letter-spacing: 2px;
+        }
+
+        /* ============================================================
+           SCREENS SYSTEM
+        ============================================================ */
+        .screen {
+            display: none;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ============================================================
+           SCREEN: ESPERA / UNIRSE
+        ============================================================ */
+        #screen-espera {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .logo-title {
+            text-align: center;
+        }
+
+        .logo-title .logo-line1 {
+            display: block;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.8rem, 5vw, 1.2rem);
+            color: var(--clr-yellow);
+            text-shadow: var(--shadow-hard), var(--shadow-glow-y);
+            letter-spacing: 2px;
+        }
+
+        .logo-title .logo-line2 {
+            display: block;
+            font-family: var(--font-hud);
+            font-size: clamp(1.6rem, 11vw, 2.4rem);
+            font-weight: 900;
+            color: var(--clr-cyan);
+            text-shadow: var(--shadow-hard), var(--shadow-glow-c);
+            letter-spacing: -1px;
+            margin-top: 4px;
+        }
+
+        /* Scanline decoration */
+        .pixel-divider {
+            width: 100%;
+            max-width: 280px;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--clr-yellow) 0px, var(--clr-yellow) 8px,
+                transparent 8px, transparent 12px
+            );
+            border-radius: 2px;
+        }
+
+        /* JOIN button */
+        #btn-join {
+            position: relative;
+            background: var(--clr-yellow);
+            color: #000;
+            border: none;
+            padding: 18px 40px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.7rem, 4vw, 0.9rem);
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            /* hard shadow for pixel look */
+            box-shadow: 4px 4px 0 #a07a00, 8px 8px 0 #5a4500, var(--shadow-glow-y);
+            transition: transform 0.08s, box-shadow 0.08s;
+            animation: pulse-join 2s ease-in-out infinite;
+        }
+
+        #btn-join:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0 #a07a00, var(--shadow-glow-y);
+        }
+
+        @keyframes pulse-join {
+            0%, 100% { box-shadow: 4px 4px 0 #a07a00, 8px 8px 0 #5a4500, var(--shadow-glow-y); }
+            50%       { box-shadow: 4px 4px 0 #a07a00, 8px 8px 0 #5a4500, 0 0 25px rgba(247,213,29,0.85), 0 0 60px rgba(247,213,29,0.4); }
+        }
+
+        /* Waiting state */
+        #txt-espera {
+            display: none;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.55rem, 3.5vw, 0.75rem);
+            color: var(--clr-yellow);
+            text-align: center;
+            line-height: 1.9;
+            text-shadow: var(--shadow-glow-y);
+            animation: blink-text 1.2s step-end infinite;
+        }
+
+        @keyframes blink-text {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        /* ============================================================
+           PHOTO / AVATAR SECTION
+        ============================================================ */
+        #photo-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 0 24px;
+        }
+
+        #camera-text {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.5rem, 3vw, 0.65rem);
+            color: var(--clr-cyan);
+            text-align: center;
+            line-height: 2;
+            text-shadow: var(--shadow-glow-c);
+        }
+
+        #capture-options {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-source {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--clr-purple), #6600cc);
+            color: white;
+            padding: 14px 32px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.55rem, 3.5vw, 0.7rem);
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            max-width: 260px;
+            box-shadow: 4px 4px 0 #3d0066, var(--shadow-glow-p);
+            transition: transform 0.08s, box-shadow 0.08s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-source:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0 #3d0066;
+        }
+
+        /* Preview box */
+        #preview-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #preview-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--clr-yellow);
+            object-fit: cover;
+            image-rendering: pixelated;
+            box-shadow: 0 0 0 3px #000, 0 0 0 5px var(--clr-yellow), var(--shadow-glow-y);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        #btn-send-photo {
+            flex: 1;
+            max-width: 140px;
+            background: var(--clr-green);
+            color: #000;
+            padding: 14px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.5rem, 3vw, 0.6rem);
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #007a00, 0 0 12px rgba(57,255,20,0.4);
+            transition: transform 0.08s;
+        }
+
+        #btn-send-photo:active { transform: translate(3px, 3px); box-shadow: none; }
+
+        #btn-retake-photo {
+            flex: 1;
+            max-width: 140px;
+            background: var(--clr-red);
+            color: white;
+            padding: 14px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.5rem, 3vw, 0.6rem);
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #7a0000, 0 0 12px rgba(255,45,45,0.4);
+            transition: transform 0.08s;
+        }
+
+        #btn-retake-photo:active { transform: translate(3px, 3px); box-shadow: none; }
+
+        /* ============================================================
+           CROP SCREEN
+        ============================================================ */
+        #crop-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            height: 100dvh;
+            position: fixed;
+            top: 0; left: 0;
+            background-color: var(--clr-bg);
+            background-image:
+                linear-gradient(rgba(155,48,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(155,48,255,0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        #crop-screen h2 {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.6rem, 4vw, 0.9rem);
+            color: var(--clr-yellow);
+            text-shadow: var(--shadow-hard), var(--shadow-glow-y);
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        #crop-frame {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background-color: #1a1a2e;
+            /* Layered border: hard pixel + glow */
+            box-shadow:
+                0 0 0 4px #000,
+                0 0 0 7px var(--clr-yellow),
+                0 0 0 9px #000,
+                var(--shadow-glow-y);
+        }
+
+        #crop-image {
+            position: absolute;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            user-select: none;
+            -webkit-user-drag: none;
+            cursor: grab;
+        }
+
+        #crop-image:active { cursor: grabbing; }
+
+        .zoom-label {
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            color: var(--clr-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #zoom-slider {
+            -webkit-appearance: none;
+            width: 240px;
+            height: 6px;
+            background: var(--clr-border);
+            border-radius: 3px;
+            outline: none;
+            border: 1px solid var(--clr-muted);
+        }
+
+        #zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            background: var(--clr-yellow);
+            border-radius: 3px;
+            box-shadow: 2px 2px 0 #5a4500;
+            cursor: pointer;
+        }
+
+        .crop-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .btn-crop-action {
+            padding: 14px 24px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.5rem, 3vw, 0.65rem);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.08s;
+        }
+
+        #btn-retake-crop {
+            background: var(--clr-red);
+            color: white;
+            box-shadow: 3px 3px 0 #7a0000;
+        }
+
+        #btn-confirm-crop {
+            background: var(--clr-green);
+            color: #000;
+            box-shadow: 3px 3px 0 #007a00;
+        }
+
+        #btn-retake-crop:active, #btn-confirm-crop:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        /* ============================================================
+           CONTROLLER LAYOUTS — SHARED
+        ============================================================ */
+        .layout-panel {
+            display: none;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ============================================================
+           LAYOUT: BOTONES DIRECCIONALES
+        ============================================================ */
+        #layout-botones {
+            flex-direction: row;
+        }
+
+        #left-hand-btns {
+            display: flex;
+            flex-direction: row;
+            width: 50%;
+            border-right: 3px solid #000;
+        }
+
+        .btn-dir {
+            flex: 1;
+            background: linear-gradient(180deg, #1a5fa8, #0d3a68);
+            border: none;
+            font-size: clamp(2rem, 10vw, 4rem);
+            color: var(--clr-cyan);
+            border-right: 2px solid #000;
+            text-shadow: var(--shadow-glow-c);
+            /* Inset shadow for depth */
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -5px 0 rgba(0,0,0,0.4);
+            transition: filter 0.06s, transform 0.06s;
+        }
+
+        #btn-right {
+            background: linear-gradient(180deg, #2070bb, #124080);
+        }
+
+        .right-hand-action {
+            display: flex;
+            width: 50%;
+            padding: 14px;
+        }
+
+        /* ============================================================
+           LAYOUT: JOYSTICK
+        ============================================================ */
+        #layout-joystick {
+            flex-direction: row;
+        }
+
+        #joy-zone {
+            width: 50%;
+            position: relative;
+            border-right: 3px solid #000;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a12 100%);
+        }
+
+        /* subtle crosshair hint */
+        #joy-zone::before, #joy-zone::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--clr-border);
+            pointer-events: none;
+        }
+        #joy-zone::before { width: 60px; height: 1px; }
+        #joy-zone::after  { width: 1px;  height: 60px; }
+
+        #joy-base {
+            position: absolute;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: rgba(0,229,255,0.06);
+            border: 2px solid rgba(0,229,255,0.25);
+            transform: translate(-50%, -50%);
+            display: none;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(0,229,255,0.15);
+        }
+
+        #joy-stick {
+            position: absolute;
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, var(--clr-cyan), var(--clr-blue));
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 12px rgba(0,229,255,0.7), inset 0 2px 0 rgba(255,255,255,0.3), 3px 3px 0 rgba(0,0,0,0.5);
+        }
+
+        /* ============================================================
+           SHARED: ACTION / DASH BUTTON
+        ============================================================ */
+        .btn-dash {
+            flex: 1;
+            background: linear-gradient(180deg, var(--clr-pink), #990040);
+            border: none;
+            border-radius: 16px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.55rem, 3.5vw, 0.75rem);
+            font-weight: bold;
+            color: white;
+            letter-spacing: 0.5px;
+            touch-action: none;
+            box-shadow:
+                0 6px 0 #5a0028,
+                inset 0 3px 0 rgba(255,255,255,0.2),
+                0 0 20px rgba(255,45,120,0.4);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transition: filter 0.06s;
+        }
+
+        /* ============================================================
+           LAYOUT: UN BOTÓN
+        ============================================================ */
+        #layout-un-boton {
+            padding: 20px;
+        }
+
+        #btn-gigante {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #ff3040, #8a0010);
+            border: none;
+            border-radius: 24px;
+            font-family: var(--font-pixel);
+            font-size: clamp(1.2rem, 8vw, 2.2rem);
+            font-weight: bold;
+            color: white;
+            letter-spacing: 1px;
+            touch-action: none;
+            box-shadow:
+                0 10px 0 #4a0008,
+                inset 0 4px 0 rgba(255,255,255,0.15),
+                0 0 40px rgba(255,45,60,0.35);
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+        }
+
+        /* ============================================================
+           ACTIVE / PRESSED STATES
+        ============================================================ */
+        .btn-pressed-dir {
+            filter: brightness(0.55);
+            box-shadow: inset 0 6px 0 rgba(0,0,0,0.5) !important;
+        }
+
+        .btn-pressed-dash {
+            filter: brightness(0.6);
+            box-shadow: 0 2px 0 #5a0028, inset 0 4px 0 rgba(0,0,0,0.4) !important;
+            transform: translateY(4px);
+        }
+
+        .btn-pressed-gigante {
+            filter: brightness(0.65);
+            box-shadow: 0 3px 0 #4a0008, inset 0 6px 0 rgba(0,0,0,0.4) !important;
+            transform: translateY(7px);
+        }
+
+        /* ============================================================
+           PIXEL CORNER DECORATIONS (applied via pseudo on panels)
+        ============================================================ */
+        #layout-botones, #layout-joystick, #layout-un-boton {
+            position: relative;
+        }
+
+        /* Corner notch decorations */
+        #layout-botones::before,
+        #layout-joystick::before {
+            content: '';
+            position: absolute;
+            bottom: 8px; left: 50%;
+            transform: translateX(-50%);
+            width: 40px; height: 2px;
+            background: var(--clr-border);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+           RESPONSIVE: ensure no overflow
+        ============================================================ */
+        @media (max-height: 580px) {
+            #crop-frame { width: 180px; height: 180px; }
+            .logo-title .logo-line2 { font-size: 1.4rem; }
+            #btn-join { padding: 14px 28px; }
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="top-bar">Jugador: Esperando...</div>
-    
-    <div id="pantalla-espera" class="pantalla" style="display: flex;">
-        <button id="btn-join">Unirse a la partida</button>
-        <p id="txt-espera" style="display:none; font-size: 1.5rem; color: #f1c40f;">¡Esperando al Host!</p>
+    <!-- ═══════════════════════ HUD BAR ═══════════════════════ -->
+    <div id="top-bar">
+        <span id="hud-player-name">ESPERANDO...</span>
     </div>
 
-    <div id="layout-botones" class="pantalla">
+    <!-- ═══════════════════════ SCREEN: ESPERA ═══════════════════════ -->
+    <div id="screen-espera" class="screen" style="display: flex;">
+
+        <div class="logo-title">
+            <span class="logo-line1">◆ PARTY GAME ◆</span>
+            <span class="logo-line2">SUPER MANDO</span>
+        </div>
+
+        <div class="pixel-divider"></div>
+
+        <button id="btn-join">[ UNIRSE ]</button>
+
+        <p id="txt-espera">▼ ESPERANDO AL HOST ▼</p>
+
+        <!-- Avatar section -->
+        <div id="photo-container">
+            <p id="camera-text">▶ ELIGE TU AVATAR ◀</p>
+
+            <div id="capture-options" style="display: flex; width: 100%; justify-content: center;">
+                <label for="avatar-input" class="btn-source">📸 &nbsp;ELEGIR AVATAR</label>
+            </div>
+
+            <!-- HACK: application/pdf fuerza menú Cámara/Galería en Android -->
+            <input type="file" id="avatar-input" accept="image/jpeg, image/png, application/pdf" style="display: none;">
+
+            <div id="preview-box">
+                <img id="preview-photo" src="" alt="Avatar">
+                <div class="action-buttons">
+                    <button id="btn-retake-photo">↻ REPETIR</button>
+                    <button id="btn-send-photo">ENVIAR ✓</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════════ CROP SCREEN ═══════════════════════ -->
+    <div id="crop-screen">
+        <h2>◈ AJUSTA TU CARA ◈</h2>
+        <div id="crop-frame">
+            <img id="crop-image" src="" alt="Foto" draggable="false">
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;">
+            <span class="zoom-label">· ZOOM ·</span>
+            <input type="range" id="zoom-slider" min="0.2" max="3" step="0.05" value="1">
+        </div>
+        <div class="crop-actions">
+            <button id="btn-retake-crop"  class="btn-crop-action">❌ CANCELAR</button>
+            <button id="btn-confirm-crop" class="btn-crop-action">✅ CONFIRMAR</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════ LAYOUT: BOTONES DIRECCIONALES ═══════════════════════ -->
+    <div id="layout-botones" class="screen layout-panel">
         <div id="left-hand-btns">
             <button class="btn-dir control-btn" data-action="left">◀</button>
-            <button class="btn-dir control-btn" data-action="right" id="btn-right">▶</button>
+            <button class="btn-dir control-btn" data-action="right">▶</button>
         </div>
         <div class="right-hand-action">
             <button class="btn-dash control-btn" data-action="dash">ACCIÓN</button>
         </div>
     </div>
 
-    <div id="layout-joystick" class="pantalla">
+    <!-- ═══════════════════════ LAYOUT: JOYSTICK ═══════════════════════ -->
+    <div id="layout-joystick" class="screen layout-panel">
         <div id="joy-zone">
-            <div id="joy-base"><div id="joy-stick"></div></div>
+            <div id="joy-base">
+                <div id="joy-stick"></div>
+            </div>
         </div>
         <div class="right-hand-action">
             <button class="btn-dash control-btn" data-action="dash">ACCIÓN</button>
         </div>
     </div>
-    
-    <div id="layout-un-boton" class="pantalla">
+
+    <!-- ═══════════════════════ LAYOUT: UN BOTÓN ═══════════════════════ -->
+    <div id="layout-un-boton" class="screen layout-panel">
         <button id="btn-gigante" class="control-btn" data-action="dash">¡PULSA!</button>
     </div>
 
+
     <script>
-        // NUEVO: Captura la IP automáticamente de la URL. Si lo abres como archivo local, usa localhost.
-        const IP_DEL_PC = window.location.hostname || "127.0.0.1"; 
-        let ws;
-        let wakeLock = null; // Variable para el bloqueo de pantalla
+    // ================================================================
+    //  CONFIG
+    // ================================================================
+    const IP_DEL_PC = window.location.hostname || "127.0.0.1";
+    const SIZE = 64; // Tamaño final del avatar para Godot
 
-        const topBar = document.getElementById("top-bar");
-        const btnJoin = document.getElementById("btn-join");
-        const txtEspera = document.getElementById("txt-espera");
+    // ================================================================
+    //  REFERENCIAS DOM
+    // ================================================================
+    const hudPlayerName   = document.getElementById("hud-player-name");
+    const btnJoin         = document.getElementById("btn-join");
+    const txtEspera       = document.getElementById("txt-espera");
+    const photoContainer  = document.getElementById("photo-container");
+    const previewBox      = document.getElementById("preview-box");
+    const previewPhoto    = document.getElementById("preview-photo");
+    const btnSendPhoto    = document.getElementById("btn-send-photo");
+    const cameraText      = document.getElementById("camera-text");
+    const captureOptions  = document.getElementById("capture-options");
+    const avatarInput     = document.getElementById("avatar-input");
 
-        function cambiarLayout(nombreLayout) {
-            document.querySelectorAll('.pantalla').forEach(p => p.style.display = 'none');
-            
-            if(nombreLayout === "espera") document.getElementById("pantalla-espera").style.display = "flex";
-            if(nombreLayout === "botones") document.getElementById("layout-botones").style.display = "flex";
-            if(nombreLayout === "joystick") document.getElementById("layout-joystick").style.display = "flex";
-            if(nombreLayout === "un_boton") document.getElementById("layout-un-boton").style.display = "block"; 
-        }
+    // Crop
+    const cropScreen      = document.getElementById("crop-screen");
+    const cropImage       = document.getElementById("crop-image");
+    const zoomSlider      = document.getElementById("zoom-slider");
 
-        function conectar() {
-            ws = new WebSocket(`ws://${IP_DEL_PC}:8080`);
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if(data.type === "welcome") {
-                    topBar.innerText = "Jugador " + data.player_id;
-                    btnJoin.style.display = "none";
-                    txtEspera.style.display = "block";
-                }
-                if(data.type === "change_layout") cambiarLayout(data.layout);
-            };
-            ws.onclose = () => { setTimeout(conectar, 3000); };
-        }
+    // ================================================================
+    //  ESTADO GLOBAL
+    // ================================================================
+    let ws        = null;
+    let wakeLock  = null;
+    let finalBase64Data = "";
 
-        // NUEVO: Al pulsar "Unirse", pedimos pantalla completa y encendemos el Wake Lock
-        btnJoin.onclick = async () => { 
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "join" }));
-                
-                // Pedir Pantalla Completa
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch((e) => console.log("Error Fullscreen:", e));
-                }
-                
-                // Pedir Wake Lock (Mantener pantalla encendida)
-                try {
-                    if ('wakeLock' in navigator) {
-                        wakeLock = await navigator.wakeLock.request('screen');
-                    }
-                } catch (err) {
-                    console.log("Error WakeLock:", err);
-                }
+    // Estado cropper — NO TOCAR las matemáticas de estos valores
+    let imgCenterX = 0, imgCenterY = 0;
+    let currentScale = 1;
+    let isDragging = false;
+    let startX, startY;
+    let initialDistance = 0, initialScale = 1;
+
+    // ================================================================
+    //  HELPERS
+    // ================================================================
+    function vibrar() { if (navigator.vibrate) navigator.vibrate(40); }
+
+    // ================================================================
+    //  GESTOR DE PANTALLAS
+    // ================================================================
+    function mostrarSoloScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+        const target = document.getElementById(id);
+        if (target) target.style.display = (id === "layout-un-boton") ? "block" : "flex";
+    }
+
+    function cambiarLayout(nombre) {
+        const map = {
+            "espera":   "screen-espera",
+            "botones":  "layout-botones",
+            "joystick": "layout-joystick",
+            "un_boton": "layout-un-boton",
+        };
+        if (map[nombre]) mostrarSoloScreen(map[nombre]);
+    }
+
+    // ================================================================
+    //  WEBSOCKET & RED
+    // ================================================================
+    function conectar() {
+        ws = new WebSocket(`ws://${IP_DEL_PC}:8080`);
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "welcome") {
+                hudPlayerName.innerText = "JUGADOR " + data.player_id;
+                btnJoin.style.display = "none";
+                txtEspera.style.display = "block";
+                photoContainer.style.display = "flex";
+            }
+
+            if (data.type === "change_layout") {
+                cambiarLayout(data.layout);
             }
         };
 
-        function sendInput(actionName, stateName) {
-            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "input", action: actionName, state: stateName }));
+        ws.onclose = () => setTimeout(conectar, 3000);
+    }
+
+    function sendInput(actionName, stateName) {
+        if (ws && ws.readyState === WebSocket.OPEN)
+            ws.send(JSON.stringify({ type: "input", action: actionName, state: stateName }));
+    }
+
+    function sendJoystick(axisX, axisY) {
+        if (ws && ws.readyState === WebSocket.OPEN)
+            ws.send(JSON.stringify({ type: "joystick", axis_x: axisX, axis_y: axisY }));
+    }
+
+    // ================================================================
+    //  BOTÓN UNIRSE
+    // ================================================================
+    btnJoin.addEventListener('click', async () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "join" }));
+
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(e => console.log("Fullscreen:", e));
+            }
+            try {
+                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) { /* ignore */ }
+        }
+    });
+
+    // ================================================================
+    //  AVATAR — CARGA DE IMAGEN
+    // ================================================================
+    function handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert("¡Por favor, elige una foto válida!");
+            return;
         }
 
-        function sendJoystick(axisX, axisY) {
-            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "joystick", axis_x: axisX, axis_y: axisY }));
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            cropImage.src = event.target.result;
+            cropImage.onload = () => {
+                // Reset cropper state
+                currentScale = 1;
+                zoomSlider.value = 1;
+                imgCenterX = 0;
+                imgCenterY = 0;
+                updateTransform();
+
+                mostrarSoloScreen(null); // Ocultar todo
+                document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+                cropScreen.style.display = "flex";
+            };
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    }
+
+    avatarInput.addEventListener('change', handleImageUpload);
+
+    // ================================================================
+    //  CROPPER — MATEMÁTICAS (NO MODIFICAR)
+    // ================================================================
+    function updateTransform() {
+        cropImage.style.transform =
+            `translate(-50%, -50%) translate(${imgCenterX}px, ${imgCenterY}px) scale(${currentScale})`;
+    }
+
+    function getDistance(t1, t2) {
+        return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    }
+
+    function onDragStart(e) {
+        if (e.touches && e.touches.length === 2) {
+            isDragging = false;
+            initialDistance = getDistance(e.touches[0], e.touches[1]);
+            initialScale = parseFloat(currentScale);
+            return;
         }
+        isDragging = true;
+        let cx = e.touches ? e.touches[0].clientX : e.clientX;
+        let cy = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = cx - imgCenterX;
+        startY = cy - imgCenterY;
+    }
 
-        function vibrarMando() {
-            // NUEVO: Hace vibrar el móvil 50ms (si el navegador y el dispositivo lo soportan)
-            if (navigator.vibrate) navigator.vibrate(50);
+    function onDragMove(e) {
+        if (e.touches && e.touches.length === 2) {
+            e.preventDefault();
+            if (initialDistance > 0) {
+                const d = getDistance(e.touches[0], e.touches[1]);
+                let ns = initialScale * (d / initialDistance);
+                currentScale = Math.max(0.2, Math.min(3, ns));
+                zoomSlider.value = currentScale;
+                updateTransform();
+            }
+            return;
         }
+        if (!isDragging) return;
+        e.preventDefault();
+        let cx = e.touches ? e.touches[0].clientX : e.clientX;
+        let cy = e.touches ? e.touches[0].clientY : e.clientY;
+        imgCenterX = cx - startX;
+        imgCenterY = cy - startY;
+        updateTransform();
+    }
 
-        // Eventos para los botones
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            const action = btn.getAttribute('data-action');
-            const activeClass = btn.id === "btn-gigante" ? "active-gigante" : "active-btn";
-            
-            btn.addEventListener('touchstart', (e) => { 
-                e.preventDefault(); 
-                btn.classList.add(activeClass); 
-                vibrarMando(); // NUEVO: Llamamos a la vibración aquí
-                sendInput(action, "pressed"); 
-            }, {passive: false});
-            
-            btn.addEventListener('touchend', (e) => { 
-                e.preventDefault(); 
-                btn.classList.remove(activeClass); 
-                sendInput(action, "released"); 
-            }, {passive: false});
-        });
+    function onDragEnd(e) {
+        if (e.touches && e.touches.length === 1) {
+            isDragging = true;
+            startX = e.touches[0].clientX - imgCenterX;
+            startY = e.touches[0].clientY - imgCenterY;
+        } else {
+            isDragging = false;
+            initialDistance = 0;
+        }
+    }
 
-        // Eventos del Joystick
-        const joyZone = document.getElementById('joy-zone'), joyBase = document.getElementById('joy-base'), joyStick = document.getElementById('joy-stick');
-        let joyActive = false, joyTouchId = null, joyCenter = { x: 0, y: 0 }, lastSendTime = 0;
+    cropImage.addEventListener('mousedown',  onDragStart);
+    cropImage.addEventListener('mousemove',  onDragMove);
+    window.addEventListener('mouseup',       onDragEnd);
+    cropImage.addEventListener('touchstart', onDragStart, { passive: false });
+    cropImage.addEventListener('touchmove',  onDragMove,  { passive: false });
+    window.addEventListener('touchend',      onDragEnd);
 
-        joyZone.addEventListener('touchstart', (e) => {
-            e.preventDefault(); if (joyActive) return;
-            vibrarMando(); // NUEVO: Vibra al clavar el dedo para mover el joystick
-            const t = e.changedTouches[0]; joyTouchId = t.identifier; joyActive = true;
-            const r = joyZone.getBoundingClientRect(); joyCenter = { x: t.clientX - r.left, y: t.clientY - r.top };
-            joyBase.style.display = 'block'; joyBase.style.left = joyCenter.x + 'px'; joyBase.style.top = joyCenter.y + 'px';
-            joyStick.style.left = '60px'; joyStick.style.top = '60px'; sendJoystick(0, 0);
-        });
-        joyZone.addEventListener('touchmove', (e) => {
-            e.preventDefault(); if (!joyActive) return;
-            let t = Array.from(e.changedTouches).find(t => t.identifier === joyTouchId); if (!t) return;
-            const r = joyZone.getBoundingClientRect(); let dx = (t.clientX - r.left) - joyCenter.x, dy = (t.clientY - r.top) - joyCenter.y;
-            const dist = Math.sqrt(dx * dx + dy * dy); if (dist > 60) { dx = (dx / dist) * 60; dy = (dy / dist) * 60; }
-            joyStick.style.left = (60 + dx) + 'px'; joyStick.style.top = (60 + dy) + 'px';
-            const now = Date.now(); if (now - lastSendTime > 50) { sendJoystick(parseFloat((dx/60).toFixed(2)), parseFloat((dy/60).toFixed(2))); lastSendTime = now; }
-        });
-        joyZone.addEventListener('touchend', (e) => {
-            e.preventDefault(); if (!joyActive) return;
-            if (Array.from(e.changedTouches).find(t => t.identifier === joyTouchId)) { joyActive = false; joyTouchId = null; joyBase.style.display = 'none'; sendJoystick(0, 0); }
-        });
+    zoomSlider.addEventListener('input', (e) => {
+        currentScale = e.target.value;
+        updateTransform();
+    });
 
-        conectar();
+    // ================================================================
+    //  CROPPER — ACCIONES
+    // ================================================================
+    document.getElementById('btn-retake-crop').addEventListener('click', () => {
+        cropScreen.style.display = "none";
+        mostrarSoloScreen("screen-espera");
+    });
+
+    document.getElementById('btn-confirm-crop').addEventListener('click', () => {
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width  = SIZE;
+        finalCanvas.height = SIZE;
+        const ctx = finalCanvas.getContext('2d');
+
+        // Recorte circular con transparencia
+        ctx.beginPath();
+        ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Replicar la vista visual en el canvas pequeño (NO TOCAR)
+        const k = SIZE / 250.0;
+        const origW = cropImage.naturalWidth;
+        const origH = cropImage.naturalHeight;
+
+        ctx.translate(SIZE / 2, SIZE / 2);
+        ctx.scale(k, k);
+        ctx.scale(currentScale, currentScale);
+        ctx.translate(imgCenterX / currentScale, imgCenterY / currentScale);
+        ctx.drawImage(cropImage, -origW / 2, -origH / 2, origW, origH);
+
+        const base64String = finalCanvas.toDataURL('image/png', 1.0);
+        finalBase64Data    = base64String.split(',')[1];
+
+        cropScreen.style.display = "none";
+        mostrarSoloScreen("screen-espera");
+
+        // Mostrar vista previa
+        captureOptions.style.display = "none";
+        previewPhoto.src = base64String;
+        cameraText.innerText = "◆ ASÍ TE VERÁN ◆";
+        previewBox.style.display = "flex";
+    });
+
+    // ================================================================
+    //  AVATAR — RETOMAR Y ENVIAR
+    // ================================================================
+    document.getElementById('btn-retake-photo').addEventListener('click', () => {
+        previewBox.style.display   = "none";
+        captureOptions.style.display = "flex";
+        cameraText.innerText       = "▶ ELIGE TU AVATAR ◀";
+    });
+
+    btnSendPhoto.addEventListener('click', () => {
+        if (ws && ws.readyState === WebSocket.OPEN && finalBase64Data !== "") {
+            ws.send(JSON.stringify({ type: "face_photo", data: finalBase64Data }));
+            photoContainer.style.display = "none";
+            txtEspera.innerText = "▼ FOTO ENVIADA · ESPERANDO ▼";
+        }
+    });
+
+    // ================================================================
+    //  CONTROLES — BOTONES (touch events con preventDefault)
+    // ================================================================
+    document.querySelectorAll('.control-btn').forEach(btn => {
+        const action = btn.getAttribute('data-action');
+        const isGigante = btn.id === "btn-gigante";
+        const isDash    = btn.classList.contains('btn-dash');
+        const isDir     = btn.classList.contains('btn-dir');
+
+        const pressClass   = isGigante ? 'btn-pressed-gigante' : (isDash ? 'btn-pressed-dash' : 'btn-pressed-dir');
+
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            btn.classList.add(pressClass);
+            vibrar();
+            sendInput(action, "pressed");
+        }, { passive: false });
+
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            btn.classList.remove(pressClass);
+            sendInput(action, "released");
+        }, { passive: false });
+    });
+
+    // ================================================================
+    //  CONTROLES — JOYSTICK TÁCTIL (touch-action: none preservado)
+    // ================================================================
+    const joyZone  = document.getElementById('joy-zone');
+    const joyBase  = document.getElementById('joy-base');
+    const joyStick = document.getElementById('joy-stick');
+
+    let joyActive   = false;
+    let joyTouchId  = null;
+    let joyCenter   = { x: 0, y: 0 };
+    let lastJoySend = 0;
+
+    joyZone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (joyActive) return;
+        vibrar();
+        const t = e.changedTouches[0];
+        joyTouchId  = t.identifier;
+        joyActive   = true;
+        const r     = joyZone.getBoundingClientRect();
+        joyCenter   = { x: t.clientX - r.left, y: t.clientY - r.top };
+        joyBase.style.display = 'block';
+        joyBase.style.left    = joyCenter.x + 'px';
+        joyBase.style.top     = joyCenter.y + 'px';
+        joyStick.style.left   = '60px';
+        joyStick.style.top    = '60px';
+        sendJoystick(0, 0);
+    });
+
+    joyZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!joyActive) return;
+        let t = Array.from(e.changedTouches).find(t => t.identifier === joyTouchId);
+        if (!t) return;
+        const r  = joyZone.getBoundingClientRect();
+        let dx   = (t.clientX - r.left) - joyCenter.x;
+        let dy   = (t.clientY - r.top)  - joyCenter.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 60) { dx = (dx / dist) * 60; dy = (dy / dist) * 60; }
+        joyStick.style.left = (60 + dx) + 'px';
+        joyStick.style.top  = (60 + dy) + 'px';
+        const now = Date.now();
+        if (now - lastJoySend > 50) {
+            sendJoystick(parseFloat((dx / 60).toFixed(2)), parseFloat((dy / 60).toFixed(2)));
+            lastJoySend = now;
+        }
+    });
+
+    joyZone.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (!joyActive) return;
+        if (Array.from(e.changedTouches).find(t => t.identifier === joyTouchId)) {
+            joyActive  = false;
+            joyTouchId = null;
+            joyBase.style.display = 'none';
+            sendJoystick(0, 0);
+        }
+    });
+
+    // ================================================================
+    //  INIT
+    // ================================================================
+    conectar();
     </script>
 </body>
 </html>

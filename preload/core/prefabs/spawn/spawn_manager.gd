@@ -2,34 +2,42 @@ extends Node2D
 
 @export var player_scene: PackedScene
 
-# Ahora esta función devuelve un Array con los nodos de los jugadores creados
-func spawn_all_players(play_mode: String, host_on_pc: bool, connected_count: int) -> Array:
-	var markers = get_children()
-	var players_to_spawn = []
-	var spawned_nodes = [] # <--- Lista para guardar los que vamos creando
-	
-	if play_mode == "solo":
-		players_to_spawn = [1]
-	else:
-		if host_on_pc: players_to_spawn.append(1)
-		var offset = 2 if host_on_pc else 1
-		for i in range(connected_count):
-			players_to_spawn.append(offset + i)
+# Nos aseguramos de precargar la escena
+const PLAYER_SCENE = preload("res://entities/player/player.tscn")
 
-	for i in range(players_to_spawn.size()):
-		if i < markers.size():
-			var p = _create_player(players_to_spawn[i], markers[i].global_position)
-			spawned_nodes.append(p)
+func spawn_all_players(_mode, _host_on_pc, _count) -> Array:
+	var players_created = []
+	var ids = NetworkManager.player_faces.keys() 
 	
-	# Devolvemos la lista de nodos reales, no un número
-	return spawned_nodes 
-
-func _create_player(id: int, pos: Vector2) -> Node2D:
-	var p = player_scene.instantiate()
-	p.my_player_id = id
-	p.global_position = pos
-	p.name = "Player_" + str(id)
+	# 1. Recopilamos todos los Marker2D que hayas puesto como hijos de este nodo
+	var spawn_points = []
+	for child in get_children():
+		if child is Marker2D or child is Marker2D: # Position2D en Godot 3, Marker2D en Godot 4
+			spawn_points.append(child)
+			
+	print("SpawnManager: Encontrados ", spawn_points.size(), " puntos de spawn.")
 	
-	# Lo añadimos directamente para que el nivel pueda acceder a él al instante
-	get_parent().add_child(p)
-	return p
+	for i in range(ids.size()):
+		var p_id = ids[i]
+		var new_player = PLAYER_SCENE.instantiate()
+		new_player.my_player_id = p_id
+		new_player.name = "Player_" + str(p_id)
+		
+		get_parent().call_deferred("add_child", new_player)
+		
+		# 2. Calculamos la posición usando tus Markers
+		var final_pos = Vector2.ZERO
+		if i < spawn_points.size():
+			# Si hay un marker disponible para este jugador, usamos su posición exacta
+			final_pos = spawn_points[i].global_position
+		else:
+			# Paracaídas por si entran 8 jugadores y solo pusiste 4 markers
+			final_pos = Vector2(100 + (i * 100), 100) 
+			printerr("Aviso: Faltan Marker2D para el jugador ", p_id)
+		
+		# Aplicamos la posición
+		new_player.set_deferred("global_position", final_pos)
+		
+		players_created.append(new_player)
+		
+	return players_created
