@@ -213,6 +213,31 @@
             letter-spacing: 1px;
         }
 
+        #host-transfer-panel {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #host-transfer-panel.open { display: flex; }
+
+        .btn-player-select {
+            width: 100%;
+            padding: 10px;
+            font-family: var(--font-pixel);
+            font-size: 0.45rem;
+            border: 1px solid var(--clr-yellow);
+            border-radius: 4px;
+            background: rgba(247,213,29,0.08);
+            color: var(--clr-yellow);
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn-player-select:active {
+            background: rgba(247,213,29,0.25);
+        }
+
         /* ============================================================
            OVERLAYS DE ORIENTACIÓN
         ============================================================ */
@@ -767,6 +792,104 @@
         }
 
         /* ============================================================
+           LAYOUT: MENÚ HOST (D-pad + aceptar)
+        ============================================================ */
+        #layout-menu {
+            flex-direction: row;
+            position: relative;
+        }
+
+        #layout-menu::before {
+            content: '';
+            position: absolute;
+            bottom: 8px; left: 50%;
+            transform: translateX(-50%);
+            width: 40px; height: 2px;
+            background: var(--clr-border);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #dpad-zone {
+            width: 55%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 4px;
+            padding: 16px;
+            border-right: 3px solid #000;
+        }
+
+        .btn-dpad {
+            background: linear-gradient(180deg, #1a3a6a, #0d2040);
+            border: none;
+            border-radius: 6px;
+            font-size: clamp(1.2rem, 6vw, 2rem);
+            color: var(--clr-cyan);
+            text-shadow: var(--shadow-glow-c);
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.1), inset 0 -4px 0 rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            transition: filter 0.06s;
+        }
+
+        /* Centro del D-pad vacío */
+        .dpad-center {
+            background: transparent !important;
+            box-shadow: none !important;
+            pointer-events: none;
+        }
+
+        .btn-dpad:active, .btn-dpad.btn-pressed-dir {
+            filter: brightness(0.55);
+            box-shadow: inset 0 6px 0 rgba(0,0,0,0.5) !important;
+        }
+
+        #accept-zone {
+            width: 45%;
+            padding: 14px;
+            display: flex;
+        }
+
+        /* ============================================================
+           LAYOUT: GIRA EL MÓVIL
+        ============================================================ */
+        #layout-gira {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            padding: 32px;
+            background-color: var(--clr-bg);
+        }
+
+        #gira-icon {
+            font-size: 4rem;
+            animation: gira-anim 1.8s ease-in-out infinite;
+        }
+
+        @keyframes gira-anim {
+            0%, 100% { transform: rotate(0deg); }
+            40%       { transform: rotate(90deg); }
+            60%       { transform: rotate(90deg); }
+        }
+
+        #layout-gira p {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.6rem, 4vw, 0.85rem);
+            color: var(--clr-yellow);
+            text-shadow: var(--shadow-glow-y);
+            text-align: center;
+            line-height: 2.2;
+        }
+
+        #layout-gira .pixel-divider {
+            max-width: 200px;
+        }
+
+        /* ============================================================
            RESPONSIVE: ensure no overflow
         ============================================================ */
         @media (max-height: 580px) {
@@ -795,6 +918,10 @@
                     <input type="checkbox" id="toggle-vibration" checked>
                     <span class="toggle-slider"></span>
                 </label>
+            </div>
+            <button class="btn-settings-action" id="btn-dar-host" style="display:none; border-color: var(--clr-yellow); color: var(--clr-yellow);">👑 &nbsp;DAR HOST</button>
+            <div id="host-transfer-panel">
+                <!-- Se rellena dinámicamente con JS -->
             </div>
             <button class="btn-settings-action" id="btn-reconnect">↺ &nbsp;RECONECTAR</button>
             <button id="btn-close-settings">CERRAR</button>
@@ -893,6 +1020,30 @@
         <button id="btn-gigante" class="control-btn" data-action="dash">¡PULSA!</button>
     </div>
 
+    <!-- ═══════════════════════ LAYOUT: MENÚ HOST ═══════════════════════ -->
+    <div id="layout-menu" class="screen layout-panel">
+        <div id="dpad-zone">
+            <div class="dpad-center"></div>
+            <button class="btn-dpad control-btn" data-action="up">▲</button>
+            <div class="dpad-center"></div>
+            <button class="btn-dpad control-btn" data-action="left">◀</button>
+            <div class="dpad-center"></div>
+            <button class="btn-dpad control-btn" data-action="right">▶</button>
+            <div class="dpad-center"></div>
+            <button class="btn-dpad control-btn" data-action="down">▼</button>
+            <div class="dpad-center"></div>
+        </div>
+        <div id="accept-zone">
+            <button class="btn-dash control-btn" data-action="dash">OK</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════ LAYOUT: GIRA EL MÓVIL ═══════════════════════ -->
+    <div id="layout-gira" class="screen layout-panel">
+        <div id="gira-icon">📱</div>
+        <div class="pixel-divider"></div>
+        <p>PON EL MÓVIL<br>EN HORIZONTAL<br>¡YA CASI!</p>
+    </div>
 
     <script>
     // ================================================================
@@ -926,6 +1077,7 @@
     let ws        = null;
     let wakeLock  = null;
     let finalBase64Data = "";
+    let isHost    = false; // El servidor nos lo confirma con host_status
 
     // Estado cropper — NO TOCAR las matemáticas de estos valores
     let imgCenterX = 0, imgCenterY = 0;
@@ -954,8 +1106,10 @@
             "botones":  "layout-botones",
             "joystick": "layout-joystick",
             "un_boton": "layout-un-boton",
+            "menu":     "layout-menu",
+            "gira":     "layout-gira",
         };
-        const layoutsMando = ["botones", "joystick", "un_boton"];
+        const layoutsMando = ["botones", "joystick", "un_boton", "menu"];
         if (map[nombre]) {
             mandoActivo = layoutsMando.includes(nombre);
             if (!mandoActivo) overlayLandscape.classList.remove('active');
@@ -975,6 +1129,10 @@
 
             if (data.type === "welcome") {
                 hudPlayerName.innerText = "JUGADOR " + data.player_id;
+                // Registrar jugadores conocidos para el panel de transferencia
+                if (!connectedPlayerIds.includes(data.player_id)) {
+                    connectedPlayerIds.push(data.player_id);
+                }
                 btnJoin.style.display = "none";
                 txtEspera.style.display = "block";
                 photoContainer.style.display = "flex";
@@ -982,6 +1140,16 @@
 
             if (data.type === "change_layout") {
                 cambiarLayout(data.layout);
+            }
+
+            if (data.type === "host_status") {
+                isHost = data.is_host;
+                const btnDarHost = document.getElementById('btn-dar-host');
+                if (btnDarHost) btnDarHost.style.display = isHost ? 'block' : 'none';
+                // Guardar lista de jugadores si viene adjunta
+                if (data.player_ids) {
+                    connectedPlayerIds = data.player_ids;
+                }
             }
         };
 
@@ -1322,6 +1490,43 @@
             ws.close();
         }
         conectar();
+    });
+
+    // ================================================================
+    //  DAR HOST
+    // ================================================================
+    let connectedPlayerIds = []; // Se actualiza cuando llega welcome o host_status
+
+    document.getElementById('btn-dar-host').addEventListener('click', () => {
+        const panel = document.getElementById('host-transfer-panel');
+        const isOpen = panel.classList.contains('open');
+        if (isOpen) {
+            panel.classList.remove('open');
+            return;
+        }
+        // Rellenar con los jugadores disponibles (todos excepto yo)
+        const myId = parseInt(hudPlayerName.innerText.replace('JUGADOR ', '')) || 0;
+        panel.innerHTML = '';
+        const others = connectedPlayerIds.filter(id => id !== myId);
+        if (others.length === 0) {
+            panel.innerHTML = '<span style="font-family:var(--font-pixel);font-size:0.4rem;color:var(--clr-muted);text-align:center">NO HAY OTROS JUGADORES</span>';
+        } else {
+            others.forEach(id => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-player-select';
+                btn.innerText = '→ JUGADOR ' + id;
+                btn.addEventListener('click', () => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "transfer_host", to_player_id: id }));
+                        vibrar();
+                    }
+                    panel.classList.remove('open');
+                    settingsBackdrop.classList.remove('open');
+                });
+                panel.appendChild(btn);
+            });
+        }
+        panel.classList.add('open');
     });
 
     // ================================================================

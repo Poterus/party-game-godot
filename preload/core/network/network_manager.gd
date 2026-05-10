@@ -21,10 +21,14 @@ var http_server := TCPServer.new()
 var web_clients: Array[StreamPeerTCP] = []
 var html_content: String = ""
 
+# --- HOST ---
+var host_player_id: int = -1 # -1 = sin host asignado aún
+
 # --- SEÑALES ---
 signal player_joined(player_id: int)
 signal player_joystick(player_id: int, axis_x: float, axis_y: float)
-signal player_face_updated(player_id: int, texture: ImageTexture) # NUEVO: Avisa cuando llega una foto
+signal player_face_updated(player_id: int, texture: ImageTexture)
+signal host_changed(new_id: int)
 
 # ==========================================
 # INICIO Y BUCLE PRINCIPAL
@@ -165,10 +169,14 @@ func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 		"joystick":
 			player_joysticks[player_id] = Vector2(float(data["axis_x"]), float(data["axis_y"]))
 			
-		# NUEVO: Lógica para procesar la foto de la cara
 		"face_photo":
 			if data.has("data"):
 				_process_face_photo(player_id, data["data"])
+		
+		"transfer_host":
+			# Solo el host actual puede transferir
+			if player_id == host_player_id and data.has("to_player_id"):
+				set_host(int(data["to_player_id"]))
 
 func _process_face_photo(player_id: int, base64_data: String) -> void:
 	# 1. Convertir Base64 a raw bytes
@@ -195,6 +203,9 @@ func _process_face_photo(player_id: int, base64_data: String) -> void:
 		player_faces[player_id] = texture
 		player_face_updated.emit(player_id, texture)
 		print("📸 Foto recibida y procesada con éxito para Jugador ", player_id)
+		# El primero en mandar foto es el host
+		if host_player_id == -1:
+			set_host(player_id)
 	else:
 		push_error("Error convirtiendo bytes a imagen. Código: ", error)
 
@@ -216,6 +227,27 @@ func _setup_host_pc_controls() -> void:
 			key_event.keycode = key_code
 			InputMap.action_add_event(action, key_event)
 			
+
+# Manda un mensaje JSON a un jugador concreto por su ID
+func send_to_player(player_id: int, data: Dictionary) -> void:
+	var index = player_id - (2 if host_plays_on_pc else 1)
+	if index >= 0 and index < connected_phones.size():
+		var ws = connected_phones[index]
+		if typeof(ws) == TYPE_OBJECT and ws.has_method("send_text"):
+			ws.send_text(JSON.stringify(data))
+
+# Asigna el host, avisa a todos los móviles y emite la señal
+func set_host(new_id: int) -> void:
+	var old_id = host_player_id
+	host_player_id = new_id
+	var all_ids = player_faces.keys()
+	# Avisar al móvil que pierde el host
+	if old_id > 0:
+		send_to_player(old_id, {"type": "host_status", "is_host": false, "player_ids": all_ids})
+	# Avisar al móvil que gana el host (incluye lista de jugadores para el panel DAR HOST)
+	send_to_player(new_id, {"type": "host_status", "is_host": true, "player_ids": all_ids})
+	host_changed.emit(new_id)
+	print("👑 Host asignado al Jugador ", new_id)
 
 func debug_add_fake_player() -> void:
 	# Calculamos la siguiente ID libre inteligentemente

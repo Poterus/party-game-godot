@@ -14,7 +14,6 @@ const PLAYER_SLOT_SCENE = preload("res://ui/menus/lobby/lobby_player_slot.tscn")
 @onready var button_debug_add: Button = %ButtonDebugAdd
 
 func _ready() -> void:
-	# En lugar de player_joined, escuchamos cuando el jugador manda su foto (ya está listo)
 	NetworkManager.player_face_updated.connect(_on_player_ready)
 	
 	_generate_lobby_qr()
@@ -23,8 +22,10 @@ func _ready() -> void:
 	button_start.pressed.connect(_on_start_pressed)
 	button_debug_add.pressed.connect(_on_debug_add_pressed)
 	
-	# Desactivamos el botón de empezar hasta que haya gente
 	_update_start_button()
+	
+	# Al entrar al lobby, mandar "espera" a todos los que ya estén conectados
+	NetworkManager.send_layout_to_all("espera")
 	
 func _generate_lobby_qr() -> void:
 	var local_ip = "127.0.0.1"
@@ -41,22 +42,20 @@ func _generate_lobby_qr() -> void:
 func _on_player_ready(id: int, texture: ImageTexture) -> void:
 	var slot_name = "PlayerSlot_" + str(id)
 	
-	# --- ESTA ES LA PARTE QUE FALLABA ---
 	if grid_players.has_node(slot_name):
 		var existing_slot = grid_players.get_node(slot_name)
-		# ¡Usamos el método del slot, nada de buscar "FaceTexture" a mano!
-		existing_slot.configure_slot(id, texture, Color.WHITE) 
+		existing_slot.configure_slot(id, texture, Color.WHITE)
 		return
-	# ------------------------------------
-		
-	# Instanciamos la nueva casilla
+	
 	var new_slot = PLAYER_SLOT_SCENE.instantiate()
 	new_slot.name = slot_name
-	
 	grid_players.add_child(new_slot)
+	new_slot.configure_slot(id, texture, Color.WHITE)
 	
-	var player_color = Color.WHITE
-	new_slot.configure_slot(id, texture, player_color)
+	# El host ya recibió su layout "menu" desde set_host() en NetworkManager.
+	# El resto reciben "espera" para que esperen en el lobby.
+	if id != NetworkManager.host_player_id:
+		NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "espera"})
 	
 	_update_start_button()
 	
@@ -73,6 +72,19 @@ func _update_start_button() -> void:
 
 # --- BOTONES ---
 func _on_start_pressed() -> void:
+	# 1. Mandar a todos que giren el móvil a horizontal
+	NetworkManager.send_layout_to_all("gira")
+	# 2. Esperar 3 segundos para que lo hagan
+	button_start.disabled = true
+	button_start.text = "Cargando..."
+	await get_tree().create_timer(3.0).timeout
+	# 3. Al host le mandamos "menu" para que pueda navegar, al resto "espera"
+	for id in NetworkManager.player_faces.keys():
+		if id == NetworkManager.host_player_id:
+			NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "menu"})
+		else:
+			NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "espera"})
+	# 4. Navegar a selección de minijuego
 	get_tree().change_scene_to_file("res://ui/menus/mode_selection/mode_selection.tscn")
 
 func _on_back_pressed() -> void:
