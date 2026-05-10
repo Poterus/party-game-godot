@@ -58,18 +58,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            padding: 0 8px;
             height: 44px;
             background-color: #000;
             border-bottom: 2px solid var(--clr-border);
-        }
-
-        #top-bar::before {
-            content: '▶ ▶ ▶';
-            font-family: var(--font-pixel);
-            font-size: 0.45rem;
-            color: var(--clr-muted);
-            letter-spacing: 2px;
+            gap: 8px;
         }
 
         #hud-player-name {
@@ -79,14 +72,184 @@
             color: var(--clr-cyan);
             text-shadow: var(--shadow-glow-c);
             letter-spacing: 1px;
+            flex: 1;
+            text-align: center;
         }
 
-        #top-bar::after {
-            content: '◀ ◀ ◀';
-            font-family: var(--font-pixel);
-            font-size: 0.45rem;
+        .top-bar-btn {
+            background: none;
+            border: 1px solid var(--clr-border);
+            border-radius: 4px;
             color: var(--clr-muted);
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            touch-action: manipulation;
+            padding: 0;
+        }
+
+        .top-bar-btn:active {
+            color: var(--clr-cyan);
+            border-color: var(--clr-cyan);
+        }
+
+        /* ============================================================
+           POPUP DE AJUSTES
+        ============================================================ */
+        #settings-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #settings-backdrop.open { display: flex; }
+
+        #settings-popup {
+            background: var(--clr-panel);
+            border: 2px solid var(--clr-border);
+            border-radius: 8px;
+            padding: 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 0 0 1px #000, var(--shadow-glow-c);
+        }
+
+        #settings-popup h3 {
+            font-family: var(--font-pixel);
+            font-size: 0.6rem;
+            color: var(--clr-yellow);
+            text-shadow: var(--shadow-glow-y);
+            text-align: center;
             letter-spacing: 2px;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            color: var(--clr-text);
+            letter-spacing: 1px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--clr-border);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            left: 3px; top: 3px;
+            background: var(--clr-muted);
+            border-radius: 2px;
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: rgba(0,229,255,0.15);
+            border: 1px solid var(--clr-cyan);
+        }
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+            background: var(--clr-cyan);
+        }
+
+        .btn-settings-action {
+            width: 100%;
+            padding: 12px;
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            border: 1px solid var(--clr-border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--clr-text);
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn-settings-action:active {
+            border-color: var(--clr-cyan);
+            color: var(--clr-cyan);
+        }
+
+        #btn-close-settings {
+            width: 100%;
+            padding: 12px;
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--clr-border);
+            color: var(--clr-muted);
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        /* ============================================================
+           OVERLAYS DE ORIENTACIÓN
+        ============================================================ */
+        .orientation-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            pointer-events: none;
+            background: rgba(0,0,0,0.93);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 32px;
+        }
+
+        .orientation-overlay.active { display: flex; pointer-events: all; }
+
+        .orientation-icon {
+            font-size: 3.5rem;
+            animation: rotate-hint 2.5s ease-in-out infinite;
+        }
+
+        @keyframes rotate-hint {
+            0%, 30% { transform: rotate(0deg); }
+            55%, 80% { transform: rotate(90deg); }
+            100%     { transform: rotate(0deg); }
+        }
+
+        .orientation-overlay p {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.55rem, 3.5vw, 0.75rem);
+            color: var(--clr-yellow);
+            text-shadow: var(--shadow-glow-y);
+            text-align: center;
+            line-height: 2.2;
         }
 
         /* ============================================================
@@ -617,7 +780,37 @@
 
     <!-- ═══════════════════════ HUD BAR ═══════════════════════ -->
     <div id="top-bar">
+        <button class="top-bar-btn" id="btn-fullscreen" title="Pantalla completa">⛶</button>
         <span id="hud-player-name">ESPERANDO...</span>
+        <button class="top-bar-btn" id="btn-settings" title="Ajustes">⚙</button>
+    </div>
+
+    <!-- ═══════════════════════ POPUP AJUSTES ═══════════════════════ -->
+    <div id="settings-backdrop">
+        <div id="settings-popup">
+            <h3>◆ AJUSTES ◆</h3>
+            <div class="settings-row">
+                <span>VIBRACIÓN</span>
+                <label class="toggle">
+                    <input type="checkbox" id="toggle-vibration" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <button class="btn-settings-action" id="btn-reconnect">↺ &nbsp;RECONECTAR</button>
+            <button id="btn-close-settings">CERRAR</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════ OVERLAY: PON EN VERTICAL ═══════════════════════ -->
+    <div class="orientation-overlay" id="overlay-portrait">
+        <div class="orientation-icon">📱</div>
+        <p>PON EL MÓVIL<br>EN VERTICAL</p>
+    </div>
+
+    <!-- ═══════════════════════ OVERLAY: PON EN HORIZONTAL ═══════════════════════ -->
+    <div class="orientation-overlay" id="overlay-landscape">
+        <div class="orientation-icon">📱</div>
+        <p>PON EL MÓVIL<br>EN HORIZONTAL</p>
     </div>
 
     <!-- ═══════════════════════ SCREEN: ESPERA ═══════════════════════ -->
@@ -762,7 +955,13 @@
             "joystick": "layout-joystick",
             "un_boton": "layout-un-boton",
         };
-        if (map[nombre]) mostrarSoloScreen(map[nombre]);
+        const layoutsMando = ["botones", "joystick", "un_boton"];
+        if (map[nombre]) {
+            mandoActivo = layoutsMando.includes(nombre);
+            if (!mandoActivo) overlayLandscape.classList.remove('active');
+            mostrarSoloScreen(map[nombre]);
+            if (typeof checkOrientation === 'function') checkOrientation();
+        }
     }
 
     // ================================================================
@@ -822,7 +1021,8 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        if (!file.type.startsWith('image/')) {
+        // Aceptar image/*, type vacío (cámara Android) y application/pdf (hack galería Android)
+        if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/pdf') {
             alert("¡Por favor, elige una foto válida!");
             return;
         }
@@ -831,16 +1031,26 @@
         reader.onload = (event) => {
             cropImage.src = event.target.result;
             cropImage.onload = () => {
-                // Reset cropper state
-                currentScale = 1;
-                zoomSlider.value = 1;
+                // Calcular escala mínima para que la imagen cubra el frame (240px) sin huecos
+                const frameSize = 240;
+                const fitScale  = Math.max(
+                    frameSize / cropImage.naturalWidth,
+                    frameSize / cropImage.naturalHeight
+                );
+                // El slider va desde fitScale (imagen ajustada) hasta 3x fitScale
+                zoomSlider.min   = fitScale.toFixed(6);
+                zoomSlider.max   = (fitScale * 3).toFixed(6);
+                zoomSlider.step  = "0.0001";
+                currentScale     = fitScale;
+                zoomSlider.value = fitScale;
                 imgCenterX = 0;
                 imgCenterY = 0;
                 updateTransform();
 
-                mostrarSoloScreen(null); // Ocultar todo
+                mostrarSoloScreen(null);
                 document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
                 cropScreen.style.display = "flex";
+                checkOrientation();
             };
         };
         reader.readAsDataURL(file);
@@ -881,7 +1091,9 @@
             if (initialDistance > 0) {
                 const d = getDistance(e.touches[0], e.touches[1]);
                 let ns = initialScale * (d / initialDistance);
-                currentScale = Math.max(0.2, Math.min(3, ns));
+                const minS = parseFloat(zoomSlider.min) || 0.01;
+                const maxS = parseFloat(zoomSlider.max) || 3;
+                currentScale = Math.max(minS, Math.min(maxS, ns));
                 zoomSlider.value = currentScale;
                 updateTransform();
             }
@@ -915,7 +1127,7 @@
     window.addEventListener('touchend',      onDragEnd);
 
     zoomSlider.addEventListener('input', (e) => {
-        currentScale = e.target.value;
+        currentScale = parseFloat(e.target.value);
         updateTransform();
     });
 
@@ -1062,6 +1274,91 @@
             sendJoystick(0, 0);
         }
     });
+
+    // ================================================================
+    //  TOP BAR — FULLSCREEN
+    // ================================================================
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+        vibrar();
+    });
+
+    // ================================================================
+    //  TOP BAR — AJUSTES
+    // ================================================================
+    const settingsBackdrop = document.getElementById('settings-backdrop');
+    const toggleVibration  = document.getElementById('toggle-vibration');
+    let vibrationEnabled   = true;
+
+    // Override vibrar para respetar el toggle
+    const _vibrarOriginal = vibrar;
+    function vibrar() { if (vibrationEnabled && navigator.vibrate) navigator.vibrate(40); }
+
+    document.getElementById('btn-settings').addEventListener('click', () => {
+        settingsBackdrop.classList.add('open');
+    });
+
+    document.getElementById('btn-close-settings').addEventListener('click', () => {
+        settingsBackdrop.classList.remove('open');
+    });
+
+    settingsBackdrop.addEventListener('click', (e) => {
+        if (e.target === settingsBackdrop) settingsBackdrop.classList.remove('open');
+    });
+
+    toggleVibration.addEventListener('change', () => {
+        vibrationEnabled = toggleVibration.checked;
+    });
+
+    document.getElementById('btn-reconnect').addEventListener('click', () => {
+        settingsBackdrop.classList.remove('open');
+        vibrar();
+        if (ws) {
+            ws.onclose = null; // Evitar auto-reconexión duplicada
+            ws.close();
+        }
+        conectar();
+    });
+
+    // ================================================================
+    //  ORIENTACIÓN
+    // ================================================================
+    // Overlay vertical: activo en espera/crop si el móvil está horizontal
+    const SCREENS_PORTRAIT = ['screen-espera', 'crop-screen'];
+
+    const overlayPortrait  = document.getElementById('overlay-portrait');
+    const overlayLandscape = document.getElementById('overlay-landscape');
+
+    // El overlay horizontal se activa manualmente cuando Godot manda change_layout
+    // y se desactiva cuando el usuario gira el móvil a horizontal
+    let mandoActivo = false;
+
+    function getScreenActiva() {
+        if (cropScreen.style.display === 'flex') return 'crop-screen';
+        const visible = [...document.querySelectorAll('.screen')].find(s => s.style.display && s.style.display !== 'none');
+        return visible ? visible.id : null;
+    }
+
+    function checkOrientation() {
+        const isLandscape = window.innerWidth > window.innerHeight;
+        const screenId    = getScreenActiva();
+
+        // Overlay "pon en vertical": solo en pantallas de unirse/foto/crop
+        overlayPortrait.classList.toggle('active', SCREENS_PORTRAIT.includes(screenId) && isLandscape);
+
+        // Overlay "pon en horizontal": solo cuando estamos en el mando y está vertical
+        if (mandoActivo) {
+            overlayLandscape.classList.toggle('active', !isLandscape);
+        }
+    }
+
+    window.addEventListener('resize', checkOrientation);
+    screen.orientation?.addEventListener('change', checkOrientation);
+    checkOrientation();
 
     // ================================================================
     //  INIT

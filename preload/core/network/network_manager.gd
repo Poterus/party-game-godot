@@ -177,9 +177,11 @@ func _process_face_photo(player_id: int, base64_data: String) -> void:
 		push_error("Error decodificando la foto Base64 del jugador ", player_id)
 		return
 		
-	# 2. Intentar cargar los bytes como JPG
+	# 2. Intentar cargar los bytes como PNG primero, luego JPG como fallback
 	var image := Image.new()
-	var error = image.load_jpg_from_buffer(raw_data)
+	var error = image.load_png_from_buffer(raw_data)
+	if error != OK:
+		error = image.load_jpg_from_buffer(raw_data)
 	
 	if error == OK:
 		# 3. Crear una textura
