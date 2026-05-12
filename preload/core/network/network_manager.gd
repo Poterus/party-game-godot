@@ -4,11 +4,15 @@ extends Node
 # MEMORIA Y ESTADO GLOBAL
 # ==========================================
 var current_play_mode: String = "solo" # "solo", "local", "online"
+var current_minigame_layout: String = "joystick" # Layout que usa el minijuego activo
+var game_phase: String = "lobby" # "lobby", "menu", "playing"
 var host_plays_on_pc: bool = false 
 
 # Diccionarios de estado de los jugadores
 var player_joysticks: Dictionary = {}
-var player_faces: Dictionary = {} # NUEVO: Guardará el ImageTexture con la cara del jugador. Clave = player_id
+var player_faces: Dictionary = {}
+var player_ips: Dictionary = {}      # player_id -> IP string
+var ws_ips: Dictionary = {}          # ws object id -> IP string (temporal hasta join)
 
 # --- SERVIDOR WEBSOCKET (Juego) ---
 const WS_PORT = 8080
@@ -29,6 +33,7 @@ signal player_joined(player_id: int)
 signal player_joystick(player_id: int, axis_x: float, axis_y: float)
 signal player_face_updated(player_id: int, texture: ImageTexture)
 signal host_changed(new_id: int)
+signal host_start_game
 
 # ==========================================
 # INICIO Y BUCLE PRINCIPAL
@@ -96,10 +101,12 @@ func _send_html_response(peer: StreamPeerTCP) -> void:
 func _process_websocket_server() -> void:
 	if ws_server.is_connection_available():
 		var tcp_peer: StreamPeerTCP = ws_server.take_connection()
+		var peer_ip = tcp_peer.get_connected_host()
 		var ws := WebSocketPeer.new()
 		ws.accept_stream(tcp_peer)
 		connected_phones.append(ws)
-		print("📱 ¡Nuevo dispositivo conectado!")
+		ws_ips[ws.get_instance_id()] = peer_ip
+		print("📱 ¡Nuevo dispositivo conectado desde ", peer_ip, "!")
 
 	for i in range(connected_phones.size() - 1, -1, -1):
 		var ws = connected_phones[i]
@@ -151,11 +158,40 @@ func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 	
 	match data["type"]:
 		"join":
-			print("Jugador ", player_id, " ha pulsado Unirse.")
-			if typeof(ws) == TYPE_OBJECT:
-				# Solo le damos la bienvenida. El index.html se encargará de mostrar la cámara.
+			# Comprobar si esta IP ya tenía un jugador (reconexión)
+			var peer_ip = ws_ips.get(ws.get_instance_id(), "")
+			var recovered_id = -1
+			for pid in player_ips:
+				if player_ips[pid] == peer_ip and peer_ip != "":
+					recovered_id = pid
+					break
+			
+			if recovered_id > 0:
+				# Reconexión: reasignar el mismo ID
+				player_id = recovered_id
+				print("🔄 Reconexión detectada: Jugador ", player_id, " desde ", peer_ip)
 				ws.send_text(JSON.stringify({"type": "welcome", "player_id": player_id}))
-			player_joined.emit(player_id)
+				# Si tenía foto, mandársela de vuelta no hace falta — el HTML ya la tiene
+				# Restaurar host_status si era el host
+				var all_ids = player_faces.keys()
+				if player_id == host_player_id:
+					ws.send_text(JSON.stringify({"type": "host_status", "is_host": true, "player_ids": all_ids}))
+					var host_layout = "lobby_host" if game_phase == "lobby" else "menu"
+					ws.send_text(JSON.stringify({"type": "change_layout", "layout": host_layout}))
+				else:
+					ws.send_text(JSON.stringify({"type": "host_status", "is_host": false, "player_ids": all_ids}))
+					var player_layout = "espera" if game_phase != "playing" else current_minigame_layout
+					ws.send_text(JSON.stringify({"type": "change_layout", "layout": player_layout}))
+				# Si tenía foto, re-emitir para que el lobby la muestre
+				if player_faces.has(player_id):
+					player_face_updated.emit(player_id, player_faces[player_id])
+			else:
+				# Jugador nuevo
+				print("Jugador ", player_id, " ha pulsado Unirse.")
+				if peer_ip != "":
+					player_ips[player_id] = peer_ip
+				ws.send_text(JSON.stringify({"type": "welcome", "player_id": player_id}))
+				player_joined.emit(player_id)
 			
 		"input":
 			var action_name = data["action"] + "_" + str(player_id) 
@@ -165,6 +201,22 @@ func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 				
 			if is_pressed: Input.action_press(action_name)
 			else: Input.action_release(action_name)
+			
+			# Si es el host, simular eventos de UI para navegar menús
+			if player_id == host_player_id:
+				var ui_map = {
+					"up": "ui_up",
+					"down": "ui_down",
+					"left": "ui_left",
+					"right": "ui_right",
+					"dash": "ui_accept"
+				}
+				var ui_action = ui_map.get(data["action"], "")
+				if ui_action != "":
+					var ev = InputEventAction.new()
+					ev.action = ui_action
+					ev.pressed = is_pressed
+					Input.parse_input_event(ev)
 				
 		"joystick":
 			player_joysticks[player_id] = Vector2(float(data["axis_x"]), float(data["axis_y"]))
@@ -177,6 +229,11 @@ func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 			# Solo el host actual puede transferir
 			if player_id == host_player_id and data.has("to_player_id"):
 				set_host(int(data["to_player_id"]))
+		
+		"start_game":
+			# Solo el host puede arrancar la partida
+			if player_id == host_player_id:
+				host_start_game.emit()
 
 func _process_face_photo(player_id: int, base64_data: String) -> void:
 	# 1. Convertir Base64 a raw bytes
@@ -246,6 +303,9 @@ func set_host(new_id: int) -> void:
 		send_to_player(old_id, {"type": "host_status", "is_host": false, "player_ids": all_ids})
 	# Avisar al móvil que gana el host (incluye lista de jugadores para el panel DAR HOST)
 	send_to_player(new_id, {"type": "host_status", "is_host": true, "player_ids": all_ids})
+	# Layout del host según fase actual
+	if game_phase == "lobby":
+		send_to_player(new_id, {"type": "change_layout", "layout": "lobby_host"})
 	host_changed.emit(new_id)
 	print("👑 Host asignado al Jugador ", new_id)
 

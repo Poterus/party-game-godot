@@ -37,6 +37,7 @@
             display: flex;
             flex-direction: column;
             height: 100dvh; /* dynamic viewport height */
+            padding-bottom: env(safe-area-inset-bottom);
             background-color: var(--clr-bg);
             background-image:
                 linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
@@ -797,6 +798,7 @@
         #layout-menu {
             flex-direction: row;
             position: relative;
+            overflow: hidden;
         }
 
         #layout-menu::before {
@@ -816,8 +818,10 @@
             grid-template-columns: 1fr 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
             gap: 4px;
-            padding: 16px;
+            padding: 12px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
             border-right: 3px solid #000;
+            min-height: 0;
         }
 
         .btn-dpad {
@@ -850,7 +854,52 @@
         #accept-zone {
             width: 45%;
             padding: 14px;
+            padding-bottom: max(14px, env(safe-area-inset-bottom));
             display: flex;
+            min-height: 0;
+        }
+
+        /* ============================================================
+           LAYOUT: LOBBY HOST (botón COMENZAR)
+        ============================================================ */
+        #layout-lobby-host {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            padding: 24px;
+        }
+
+        #lobby-host-title {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.55rem, 3.5vw, 0.75rem);
+            color: var(--clr-cyan);
+            text-shadow: var(--shadow-glow-c);
+            text-align: center;
+            line-height: 2;
+            letter-spacing: 1px;
+        }
+
+        #btn-comenzar {
+            width: 100%;
+            max-width: 320px;
+            padding: 28px 20px;
+            background: linear-gradient(180deg, var(--clr-green), #1a8a00);
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-pixel);
+            font-size: clamp(0.8rem, 5vw, 1.1rem);
+            color: #000;
+            letter-spacing: 1px;
+            touch-action: none;
+            box-shadow: 0 8px 0 #007a00, inset 0 3px 0 rgba(255,255,255,0.2), 0 0 30px rgba(57,255,20,0.3);
+            text-shadow: none;
+            transition: transform 0.08s, box-shadow 0.08s;
+        }
+
+        #btn-comenzar:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #007a00, inset 0 3px 0 rgba(255,255,255,0.1);
         }
 
         /* ============================================================
@@ -1038,6 +1087,13 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════ LAYOUT: LOBBY HOST ═══════════════════════ -->
+    <div id="layout-lobby-host" class="screen layout-panel">
+        <p id="lobby-host-title">👑 ERES EL HOST</p>
+        <div class="pixel-divider"></div>
+        <button id="btn-comenzar">▶ &nbsp;COMENZAR PARTIDA</button>
+    </div>
+
     <!-- ═══════════════════════ LAYOUT: GIRA EL MÓVIL ═══════════════════════ -->
     <div id="layout-gira" class="screen layout-panel">
         <div id="gira-icon">📱</div>
@@ -1085,6 +1141,8 @@
     let isDragging = false;
     let startX, startY;
     let initialDistance = 0, initialScale = 1;
+    let initialPinchMidX = 0, initialPinchMidY = 0;
+    let initialCenterX = 0, initialCenterY = 0;
 
     // ================================================================
     //  HELPERS
@@ -1108,9 +1166,13 @@
             "un_boton": "layout-un-boton",
             "menu":     "layout-menu",
             "gira":     "layout-gira",
+            "lobby_host": "layout-lobby-host",
         };
         const layoutsMando = ["botones", "joystick", "un_boton", "menu"];
         if (map[nombre]) {
+            // Si llega "gira" pero ya estamos en horizontal, ignorarlo
+            if (nombre === "gira" && window.innerWidth > window.innerHeight) return;
+
             mandoActivo = layoutsMando.includes(nombre);
             if (!mandoActivo) overlayLandscape.classList.remove('active');
             mostrarSoloScreen(map[nombre]);
@@ -1173,9 +1235,6 @@
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "join" }));
 
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(e => console.log("Fullscreen:", e));
-            }
             try {
                 if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
             } catch (err) { /* ignore */ }
@@ -1230,6 +1289,14 @@
     // ================================================================
     //  CROPPER — MATEMÁTICAS (NO MODIFICAR)
     // ================================================================
+    function clampDrag() {
+        const frameSize = 240;
+        const maxX = Math.max(0, (cropImage.naturalWidth  * currentScale - frameSize) / 2);
+        const maxY = Math.max(0, (cropImage.naturalHeight * currentScale - frameSize) / 2);
+        imgCenterX = Math.max(-maxX, Math.min(maxX, imgCenterX));
+        imgCenterY = Math.max(-maxY, Math.min(maxY, imgCenterY));
+    }
+
     function updateTransform() {
         cropImage.style.transform =
             `translate(-50%, -50%) translate(${imgCenterX}px, ${imgCenterY}px) scale(${currentScale})`;
@@ -1244,6 +1311,11 @@
             isDragging = false;
             initialDistance = getDistance(e.touches[0], e.touches[1]);
             initialScale = parseFloat(currentScale);
+            // Guardar punto medio inicial y centro de imagen para pinch+pan
+            initialPinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            initialPinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            initialCenterX = imgCenterX;
+            initialCenterY = imgCenterY;
             return;
         }
         isDragging = true;
@@ -1263,6 +1335,12 @@
                 const maxS = parseFloat(zoomSlider.max) || 3;
                 currentScale = Math.max(minS, Math.min(maxS, ns));
                 zoomSlider.value = currentScale;
+                // Pan simultáneo: mover según desplazamiento del punto medio
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                imgCenterX = initialCenterX + (midX - initialPinchMidX);
+                imgCenterY = initialCenterY + (midY - initialPinchMidY);
+                clampDrag();
                 updateTransform();
             }
             return;
@@ -1273,6 +1351,7 @@
         let cy = e.touches ? e.touches[0].clientY : e.clientY;
         imgCenterX = cx - startX;
         imgCenterY = cy - startY;
+        clampDrag();
         updateTransform();
     }
 
@@ -1296,6 +1375,7 @@
 
     zoomSlider.addEventListener('input', (e) => {
         currentScale = parseFloat(e.target.value);
+        clampDrag();
         updateTransform();
     });
 
@@ -1564,6 +1644,21 @@
     window.addEventListener('resize', checkOrientation);
     screen.orientation?.addEventListener('change', checkOrientation);
     checkOrientation();
+
+    // ================================================================
+    //  LOBBY HOST — BOTÓN COMENZAR
+    // ================================================================
+    document.getElementById('btn-comenzar').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        vibrar();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "start_game" }));
+        }
+        // Fullscreen al iniciar partida
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+    }, { passive: false });
 
     // ================================================================
     //  INIT

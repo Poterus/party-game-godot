@@ -24,8 +24,20 @@ func _ready() -> void:
 	
 	_update_start_button()
 	
+	NetworkManager.game_phase = "lobby"
 	# Al entrar al lobby, mandar "espera" a todos los que ya estén conectados
 	NetworkManager.send_layout_to_all("espera")
+	
+	# El host puede arrancar desde su móvil
+	NetworkManager.host_start_game.connect(_on_start_pressed)
+	
+	# Repoblar slots si volvemos al lobby con jugadores ya conectados
+	for id in NetworkManager.player_faces.keys():
+		_on_player_ready(id, NetworkManager.player_faces[id])
+	
+	# Restaurar layout del host
+	if NetworkManager.host_player_id > 0:
+		NetworkManager.send_to_player(NetworkManager.host_player_id, {"type": "change_layout", "layout": "lobby_host"})
 	
 func _generate_lobby_qr() -> void:
 	var local_ip = "127.0.0.1"
@@ -52,7 +64,7 @@ func _on_player_ready(id: int, texture: ImageTexture) -> void:
 	grid_players.add_child(new_slot)
 	new_slot.configure_slot(id, texture, Color.WHITE)
 	
-	# El host ya recibió su layout "menu" desde set_host() en NetworkManager.
+	# El host ya recibió "lobby_host" desde set_host() en NetworkManager.
 	# El resto reciben "espera" para que esperen en el lobby.
 	if id != NetworkManager.host_player_id:
 		NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "espera"})
@@ -77,7 +89,7 @@ func _on_start_pressed() -> void:
 	# 2. Esperar 3 segundos para que lo hagan
 	button_start.disabled = true
 	button_start.text = "Cargando..."
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	# 3. Al host le mandamos "menu" para que pueda navegar, al resto "espera"
 	for id in NetworkManager.player_faces.keys():
 		if id == NetworkManager.host_player_id:

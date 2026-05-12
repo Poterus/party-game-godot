@@ -9,15 +9,8 @@ func _ready():
 	%PickGameButton.pressed.connect(_on_pick_game_pressed)
 	%ExitMenuButton.pressed.connect(_on_exit_menu_pressed)
 
-# Llamar a este método desde BaseMinigame en lugar de show() directamente
-func show_and_notify(winner_id: int = -999) -> void:
-	if winner_id == -999:
-		# Solo mostrar, sin cambiar texto (para singleplayer usa show_singleplayer_score)
-		pass
-	# Mandar layout "menu" al host y "espera" al resto
-	_notify_phones_end_of_game()
-
 func _notify_phones_end_of_game() -> void:
+	NetworkManager.game_phase = "menu"
 	var host_id = NetworkManager.host_player_id
 	for id in NetworkManager.player_faces.keys():
 		if id == host_id:
@@ -30,6 +23,7 @@ func _notify_phones_end_of_game() -> void:
 func show_multiplayer_winner(winner_id: int):
 	show()
 	_notify_phones_end_of_game()
+	%RetryButton.grab_focus()
 	title_label.text = "¡FIN DE LA PARTIDA!"
 	if winner_id > 0:
 		result_label.text = "¡Ganó el Jugador " + str(winner_id) + "!"
@@ -41,6 +35,7 @@ func show_multiplayer_winner(winner_id: int):
 func show_singleplayer_score(time_survived: float):
 	show()
 	_notify_phones_end_of_game()
+	%RetryButton.grab_focus()
 	title_label.text = "¡HAS CAÍDO!"
 	var time_text = str(snapped(time_survived, 0.1))
 	result_label.text = "Tiempo: " + time_text + " segundos"
@@ -49,15 +44,19 @@ func show_singleplayer_score(time_survived: float):
 # --- LÓGICA DE LOS BOTONES ---
 
 func _on_retry_pressed():
-	# Recarga la escena actual en la que estés (el minijuego actual)
+	# Restaurar el layout del minijuego antes de recargar
+	NetworkManager.send_layout_to_all(NetworkManager.current_minigame_layout)
 	get_tree().reload_current_scene()
-	queue_free() # Nos eliminamos a nosotros mismos para asegurar limpieza
+	queue_free()
 
 func _on_pick_game_pressed():
-	# Vuelve a la pantalla de selección de minijuegos
+	queue_free()
 	get_tree().change_scene_to_file("res://ui/menus/minigame_selection/minigame_selection.tscn")
 
 func _on_exit_menu_pressed():
-	# Vuelve al menú principal o de modos
-	get_tree().change_scene_to_file("res://ui/menus/mode_selection/mode_selection.tscn")
 	queue_free()
+	if NetworkManager.current_play_mode == "solo":
+		get_tree().change_scene_to_file("res://ui/menus/main_menu/main_menu.tscn")
+	else:
+		# Vuelve al lobby para que puedan añadir jugadores o cambiar host
+		get_tree().change_scene_to_file("res://ui/menus/lobby/lobby_local.tscn")

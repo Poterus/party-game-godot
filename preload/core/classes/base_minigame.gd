@@ -6,6 +6,7 @@ class_name BaseMinigame # ¡Esto es magia! Convierte este script en un Nodo base
 @export var countdown_ui: CanvasLayer
 @export var victory_ui: PackedScene
 @export var hud_ui: CanvasLayer
+@export var minigame_layout: String = "joystick" # Layout del mando para este minijuego
 
 # --- ESTADO INTERNO ---
 var game_active: bool = false
@@ -38,7 +39,13 @@ func _ready() -> void:
 		p.player_died.connect(_on_player_died_base)
 		_setup_custom_player(p) # <--- GANCHO PARA FUTUROS MINIJUEGOS
 		
-	# 3. Arrancamos la UI
+	# 3. Configurar layout del mando y fase
+	NetworkManager.game_phase = "playing"
+	NetworkManager.current_minigame_layout = minigame_layout
+	if not is_solo_mode:
+		NetworkManager.send_layout_to_all(minigame_layout)
+	
+	# 4. Arrancamos la UI
 	countdown_ui.countdown_finished.connect(_internal_start_game)
 	countdown_ui.start_countdown()
 

@@ -8,6 +8,7 @@ func _ready() -> void:
 	button_board.pressed.connect(_on_board_pressed)
 	button_mini.pressed.connect(_on_mini_pressed)
 	button_back.pressed.connect(_on_back_pressed) # NUEVO
+	button_mini.grab_focus()
 
 func _on_board_pressed() -> void:
 	#get_tree().change_scene_to_file("res://ui/menus/lobby/lobby_local.tscn")

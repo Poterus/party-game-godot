@@ -6,6 +6,7 @@ extends Control
 func _ready() -> void:
 	btn_yunque.pressed.connect(_on_yunque_pressed)
 	btn_back.pressed.connect(_on_back_pressed)
+	btn_yunque.grab_focus()
 
 # ==========================================
 # LÓGICA INTELIGENTE DE MINIJUEGOS
@@ -16,8 +17,6 @@ func _on_yunque_pressed() -> void:
 			get_tree().change_scene_to_file("res://minigames/yunque/yunque.tscn")
 			
 		"local":
-			# ¡Ahora la llamada es súper corta y limpia!
-			NetworkManager.send_layout_to_all("joystick")
 			get_tree().change_scene_to_file("res://minigames/yunque/yunque.tscn")
 			
 func _on_back_pressed() -> void:
