@@ -57,6 +57,11 @@ columns = 3
 layout_mode = 2
 text = "Dodge the Blocks"
 
+[node name="ButtonSprint" type="Button" parent="MarginContainer/VBoxContainer/GridMinigames" unique_id=1225350845]
+layout_mode = 2
+text = "Sprint Game
+"
+
 [node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer" unique_id=113351862]
 layout_mode = 2
 

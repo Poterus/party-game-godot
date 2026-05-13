@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://cmh4p32et1ija"]
+
+[ext_resource type="Script" uid="uid://ci68jyomiimbv" path="res://minigames/sprint/sprint.gd" id="1_7tgs3"]
+[ext_resource type="PackedScene" uid="uid://ckpoao6o7ua3x" path="res://core/prefabs/sprint_lane/sprintlane.tscn" id="2_l3mhu"]
+
+[node name="Sprint" type="Node2D" unique_id=229619428]
+script = ExtResource("1_7tgs3")
+sprint_lane_scene = ExtResource("2_l3mhu")
+minigame_layout = null
+
+[node name="LanesContainer" type="Node2D" parent="." unique_id=754896387]
+position = Vector2(48, 56)
+
+[node name="SpawnManager" type="Node2D" parent="." unique_id=1733044512]
+
+[node name="CountdownUI" type="CanvasLayer" parent="." unique_id=236185110]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=414311224]
+
+[node name="ProgressBarsUI" type="CanvasLayer" parent="." unique_id=24553177]
