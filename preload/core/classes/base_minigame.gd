@@ -1,12 +1,17 @@
 extends Node2D
-class_name BaseMinigame # ¡Esto es magia! Convierte este script en un Nodo base
+class_name BaseMinigame
 
-# --- REFERENCIAS OBLIGATORIAS PARA TODOS LOS NIVELES ---
-@export var spawn_manager: Node2D
+# ====================================================
+# BASE MINIGAME - Clase base para todos los minijuegos
+# Flexible: funciona CON y SIN SpawnManager
+# ====================================================
+
+# --- REFERENCIAS OPCIONALES ---
+@export var spawn_manager: Node2D  # Opcional (Solo si usas Player con física)
 @export var countdown_ui: CanvasLayer
 @export var victory_ui: PackedScene
 @export var hud_ui: CanvasLayer
-@export var minigame_layout: String = "joystick" # Layout del mando para este minijuego
+@export var minigame_layout: String = "joystick"
 
 # --- ESTADO INTERNO ---
 var game_active: bool = false
@@ -15,37 +20,39 @@ var players_alive: int = 0
 var initial_players_count: int = 0
 var is_solo_mode: bool = false
 var is_game_over: bool = false
+var spawned_players: Array = []  # Array de jugadores spawneados (puede estar vacío)
 
 func _ready() -> void:
-	# 1. Spawneamos a los jugadores
 	is_solo_mode = (NetworkManager.current_play_mode == "solo")
 	
-	# CAMBIO AQUÍ: En lugar de connected_phones.size(), usamos player_faces.size()
-	# Esto incluye a los bots de debug y a los jugadores reales que ya tienen foto.
-	var total_players = NetworkManager.player_faces.size()
-	
-	var spawned_players = spawn_manager.spawn_all_players(
-		NetworkManager.current_play_mode, 
-		NetworkManager.host_plays_on_pc, 
-		total_players # <--- Ahora esto enviará el número correcto (ej: 3 si diste 3 veces al botón)
-	)
-	
-	players_alive = spawned_players.size()
-	initial_players_count = players_alive
-	hud_ui.create_icons(players_alive, NetworkManager.host_plays_on_pc)
-	
-	# 2. Conectamos señales y configuramos a los jugadores
-	for p in spawned_players:
-		p.player_died.connect(_on_player_died_base)
-		_setup_custom_player(p) # <--- GANCHO PARA FUTUROS MINIJUEGOS
+	# 1. SPAWN DE JUGADORES (solo si spawn_manager existe)
+	if spawn_manager:
+		spawned_players = spawn_manager.spawn_all_players(
+			NetworkManager.current_play_mode, 
+			NetworkManager.host_plays_on_pc, 
+			NetworkManager.player_faces.size()
+		)
+		players_alive = spawned_players.size()
+		initial_players_count = players_alive
+		hud_ui.create_icons(players_alive, NetworkManager.host_plays_on_pc)
 		
-	# 3. Configurar layout del mando y fase
+		# Conectar señales de muerte
+		for p in spawned_players:
+			p.player_died.connect(_on_player_died_base)
+			_setup_custom_player(p)
+	else:
+		# Sin SpawnManager: el minijuego maneja sus propias entidades
+		players_alive = NetworkManager.player_faces.size()
+		initial_players_count = players_alive
+		hud_ui.create_icons(players_alive, NetworkManager.host_plays_on_pc)
+	
+	# 2. Configurar layout del mando y fase
 	NetworkManager.game_phase = "playing"
 	NetworkManager.current_minigame_layout = minigame_layout
 	if not is_solo_mode:
 		NetworkManager.send_layout_to_all(minigame_layout)
 	
-	# 4. Arrancamos la UI
+	# 3. Arrancamos la UI del countdown
 	countdown_ui.countdown_finished.connect(_internal_start_game)
 	countdown_ui.start_countdown()
 
@@ -55,11 +62,13 @@ func _process(delta: float) -> void:
 
 func _internal_start_game():
 	game_active = true
-	# Desbloqueamos el movimiento
-	for child in spawn_manager.get_parent().get_children():
-		if child.name.begins_with("Player") and not child.is_dead:
-			child.can_move = true
-			
+	
+	# Desbloquear movimiento solo si hay jugadores spawneados
+	if spawn_manager:
+		for child in spawn_manager.get_parent().get_children():
+			if child.name.begins_with("Player") and not child.is_dead:
+				child.can_move = true
+	
 	# Avisamos al minijuego específico de que puede empezar
 	_minigame_start()
 
@@ -69,7 +78,7 @@ func _on_player_died_base(id: int) -> void:
 	players_alive -= 1
 	hud_ui.update_player_death(id)
 	
-	# Avisamos al minijuego específico por si quiere hacer algo (ej. dar puntos al asesino)
+	# Avisamos al minijuego específico
 	_minigame_player_died(id)
 	
 	if is_solo_mode:
@@ -82,7 +91,7 @@ func _end_minigame_base() -> void:
 	is_game_over = true
 	game_active = false
 	
-	# Avisamos al minijuego de que pare sus peligros (ej. dejar de spawnear yunques)
+	# Avisamos al minijuego de que termina
 	_minigame_end()
 	
 	await get_tree().create_timer(1.5).timeout
@@ -96,18 +105,16 @@ func _end_minigame_base() -> void:
 			victory_screen.show_multiplayer_winner(_get_winner_id())
 
 func _get_winner_id() -> int:
-	if players_alive == 1:
+	if players_alive == 1 and spawn_manager:
 		for child in spawn_manager.get_parent().get_children():
 			if child.name.begins_with("Player") and not child.is_dead:
 				return child.my_player_id
 	return -1
 
+# =========================================================
+# GANCHOS VIRTUALES (a sobrescribir en cada minijuego)
+# =========================================================
 
-# =========================================================
-# FUNCIONES "VIRTUALES" (GANCHOS)
-# Estas funciones están vacías aquí, pero las sobrescribiremos 
-# en cada minijuego (yunques, carreras, etc.)
-# =========================================================
 func _minigame_start() -> void:
 	pass
 
