@@ -61,48 +61,30 @@ func _input(event: InputEvent) -> void:
 # =========================================================
 
 func _instantiate_lanes() -> void:
-	"""
-	Crea un Lane por cada jugador de forma dinámica.
-	Reutiliza la escena SprintLane según el número de jugadores.
-	
-	Esto se llama en _ready() ANTES de que el juego empiece.
-	"""
-	
 	if not sprint_lane_scene:
-		push_error("❌ ERROR: 'sprint_lane_scene' no asignado en el inspector. Arrastra res://core/prefabs/sprint_lane/sprint_lane.tscn")
+		push_error("❌ ERROR: 'sprint_lane_scene' no asignado")
 		return
 	
-	# Limpiar lanes viejos si existieran
 	for child in lanes_container.get_children():
 		child.queue_free()
 	lanes.clear()
 	
 	var player_ids = NetworkManager.player_faces.keys()
 	var face_dict = NetworkManager.player_faces
+	var total = player_ids.size()
 	
-	print("📍 Creando lanes dinámicamente...")
-	print("   - Total jugadores: %d" % player_ids.size())
+	# Centrar verticalmente en 270px
+	var total_height = total * lane_spacing
+	var center_y = (270.0 / 2.0) - (total_height / 2.0)
 	
-	# Crear un lane por cada jugador
-	for i in range(player_ids.size()):
+	for i in range(total):
 		var p_id = player_ids[i]
-		var face = face_dict.get(p_id, null)
-		
-		# 1. Instanciar la escena de lane
 		var new_lane: SprintLane = sprint_lane_scene.instantiate()
 		lanes_container.add_child(new_lane)
-		
-		# 2. Posicionar verticalmente (stack)
-		new_lane.position = Vector2(0, start_y_offset + (i * lane_spacing))
-		
-		# 3. Configurar el lane (ID, foto del jugador)
-		new_lane.setup(p_id, face)
-		
-		# 4. Guardar referencia para acceso rápido
+		new_lane.position = Vector2(0, center_y + (i * lane_spacing))
+		new_lane.setup(p_id, face_dict.get(p_id, null))
 		lanes[p_id] = new_lane
 		
-		print("   ✓ Lane P%d en Y=%.0f" % [p_id, new_lane.position.y])
-
 # =========================================================
 # LÓGICA DE PULSACIONES Y PROGRESO
 # =========================================================

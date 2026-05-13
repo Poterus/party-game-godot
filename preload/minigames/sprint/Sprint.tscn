@@ -14,7 +14,8 @@ victory_ui = ExtResource("3_l3mhu")
 hud_ui = NodePath("UiHud")
 
 [node name="LanesContainer" type="Node2D" parent="." unique_id=754896387]
-position = Vector2(48, 56)
+position = Vector2(0, 30)
+scale = Vector2(0.3, 0.3)
 
 [node name="SpawnManager" type="Node2D" parent="." unique_id=1733044512]
 
