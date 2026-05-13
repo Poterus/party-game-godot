@@ -3,26 +3,23 @@
 [ext_resource type="Script" uid="uid://ci68jyomiimbv" path="res://minigames/sprint/sprint.gd" id="1_7tgs3"]
 [ext_resource type="PackedScene" uid="uid://ckpoao6o7ua3x" path="res://core/prefabs/sprint_lane/sprintlane.tscn" id="2_l3mhu"]
 [ext_resource type="PackedScene" uid="uid://cohsmayny1c8w" path="res://core/prefabs/ui/ui_victory/ui_victory.tscn" id="3_l3mhu"]
-[ext_resource type="PackedScene" uid="uid://d1jr2837buub0" path="res://core/prefabs/ui/ui_hud/ui_hud.tscn" id="4_3k1r8"]
 [ext_resource type="PackedScene" uid="uid://ciidoisjd0qv5" path="res://core/prefabs/ui/ui_countdown/ui_countdown.tscn" id="5_n7fq8"]
 
 [node name="Sprint" type="Node2D" unique_id=229619428 node_paths=PackedStringArray("countdown_ui", "hud_ui")]
 script = ExtResource("1_7tgs3")
 sprint_lane_scene = ExtResource("2_l3mhu")
+speed_per_press = 0.02
 countdown_ui = NodePath("CountdownUI")
 victory_ui = ExtResource("3_l3mhu")
-hud_ui = NodePath("UiHud")
+hud_ui = NodePath("")
 
 [node name="LanesContainer" type="Node2D" parent="." unique_id=754896387]
-position = Vector2(0, 30)
-scale = Vector2(0.3, 0.3)
+position = Vector2(10, 0)
 
 [node name="SpawnManager" type="Node2D" parent="." unique_id=1733044512]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=414311224]
 
 [node name="ProgressBarsUI" type="CanvasLayer" parent="." unique_id=24553177]
-
-[node name="UiHud" parent="." unique_id=1402551547 instance=ExtResource("4_3k1r8")]
 
 [node name="CountdownUI" parent="." unique_id=318720001 instance=ExtResource("5_n7fq8")]

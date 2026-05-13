@@ -1,33 +1,29 @@
 [gd_scene format=3 uid="uid://ckpoao6o7ua3x"]
 
 [ext_resource type="Script" uid="uid://bybs2rdnxq213" path="res://core/prefabs/sprint_lane/sprintlane.gd" id="1_5yvcn"]
-[ext_resource type="Texture2D" uid="uid://d257ffddlidy4" path="res://assets/sprites/icon.svg" id="2_7l6k3"]
+[ext_resource type="PackedScene" uid="uid://bv020hu1daru" path="res://entities/player/player.tscn" id="2_7l6k3"]
 
 [node name="Lane1" type="Node2D" unique_id=1767401413]
 script = ExtResource("1_5yvcn")
+player_scene = ExtResource("2_7l6k3")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1699089438]
-offset_left = -15.0
-offset_top = -13.0
-offset_right = 403.0
-offset_bottom = 14.0
+clip_contents = true
+offset_right = 460.0
+offset_bottom = 60.0
 metadata/_edit_use_anchors_ = true
 
 [node name="FinishLine" type="Line2D" parent="." unique_id=1636727935]
-position = Vector2(373, 14)
-points = PackedVector2Array(21, 12, 23, -42)
+position = Vector2(-20, 0)
+points = PackedVector2Array(470, 0, 470, 40)
 width = 5.0
 default_color = Color(1, 0, 0, 1)
 
-[node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1586716652]
-scale = Vector2(0.2, 0.2)
-texture = ExtResource("2_7l6k3")
-
 [node name="LabelPlayer" type="Label" parent="." unique_id=1548409460]
-offset_left = -9.0
-offset_top = 17.0
-offset_right = 31.0
-offset_bottom = 44.0
+offset_left = 1.0
+offset_top = 59.0
+offset_right = 11.0
+offset_bottom = 86.0
 text = "P1
 "
 metadata/_edit_use_anchors_ = true

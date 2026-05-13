@@ -7,33 +7,35 @@ class_name Sprint
 # ====================================================
 
 # --- CONFIGURACIÓN EXPORTADA ---
-@export var sprint_lane_scene: PackedScene  # Arrastra sprint_lane.tscn aquí
-@export var lane_spacing: float = 120.0  # Espacio vertical entre lanes
-@export var start_y_offset: float = 50.0  # Donde empieza el primer lane
-@export var speed_per_press: float = 0.05  # % de progreso por pulsación
+@export var sprint_lane_scene: PackedScene
+@export var speed_per_press: float = 0.05
 
 # --- ESTADO DEL JUEGO ---
-var player_progress: Dictionary = {}  # player_id -> float (0.0 a 1.0)
-var finish_order: Array = []  # Orden de llegada
-var button_press_count: Dictionary = {}  # Contador de pulsaciones
-var lanes: Dictionary = {}  # player_id -> SprintLane nodo (referencia)
+var player_progress: Dictionary = {}
+var finish_order: Array = []
+var button_press_count: Dictionary = {}
+var lanes: Dictionary = {}
+
+# --- CONSTANTES ---
+const LANE_W = 480.0     # Ancho real del lane en el editor
+const LANE_H = 60.0      # Altura real del lane en el editor
+const LANE_MARGIN = 5.0  # Margen entre lanes
 
 # --- REFERENCIAS DE NODOS ---
 @onready var lanes_container = $LanesContainer
 
 func _ready() -> void:
-	# 1. Inicializar diccionarios de estado
+	if NetworkManager.player_faces.is_empty():
+		NetworkManager.debug_add_fake_player()
+	
 	for p_id in NetworkManager.player_faces.keys():
 		player_progress[p_id] = 0.0
 		button_press_count[p_id] = 0
 	
-	# 2. IMPORTANTE: Crear lanes ANTES de super()._ready()
 	_instantiate_lanes()
 	
-	# 3. Llamar al _ready() del padre (BaseMinigame)
 	super()
 	
-	# 4. Configurar layout del minijuego
 	minigame_layout = "sprint"
 	NetworkManager.current_minigame_layout = minigame_layout
 	
@@ -41,18 +43,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	super(delta)
-	# No hay lógica adicional por frame en Sprint
-	# Todo es event-driven (pulsaciones)
 
 func _input(event: InputEvent) -> void:
-	"""Captura las pulsaciones del botón 'dash' de cada jugador."""
 	if not game_active:
 		return
 	
-	# Revisar cada jugador activo
 	for p_id in NetworkManager.player_faces.keys():
 		var action_name = "dash_" + str(p_id)
-		
 		if Input.is_action_just_pressed(action_name):
 			_on_player_button_pressed(p_id)
 
@@ -73,40 +70,36 @@ func _instantiate_lanes() -> void:
 	var face_dict = NetworkManager.player_faces
 	var total = player_ids.size()
 	
-	# Centrar verticalmente en 270px
-	var total_height = total * lane_spacing
-	var center_y = (270.0 / 2.0) - (total_height / 2.0)
-	
+	var screen_w = ProjectSettings.get_setting("display/window/size/viewport_width")
+	var screen_h = ProjectSettings.get_setting("display/window/size/viewport_height")
+	var available_h = screen_h * 0.9
+	var slot_h = LANE_H + LANE_MARGIN
+	var lane_scale = min(1.0, available_h / (total * slot_h))
+	var total_height = total * slot_h * lane_scale
+	var center_x = (screen_w / 2.0) - (LANE_W * lane_scale / 2.0)
+	var center_y = (screen_h / 2.0) - (total_height / 2.0)
+
 	for i in range(total):
 		var p_id = player_ids[i]
 		var new_lane: SprintLane = sprint_lane_scene.instantiate()
 		lanes_container.add_child(new_lane)
-		new_lane.position = Vector2(0, center_y + (i * lane_spacing))
+		new_lane.scale = Vector2(lane_scale, lane_scale)
+		new_lane.position = Vector2(center_x, center_y + (i * slot_h * lane_scale))
 		new_lane.setup(p_id, face_dict.get(p_id, null))
 		lanes[p_id] = new_lane
-		
+
 # =========================================================
 # LÓGICA DE PULSACIONES Y PROGRESO
 # =========================================================
 
 func _on_player_button_pressed(player_id: int) -> void:
-	"""
-	Se llama cada vez que un jugador pulsa el botón "dash".
-	Incrementa el progreso y actualiza visualización.
-	"""
-	
-	# 1. Incrementar contador y progreso
 	button_press_count[player_id] += 1
 	player_progress[player_id] += speed_per_press
 	player_progress[player_id] = min(player_progress[player_id], 1.0)
 	
-	# 2. Actualizar visualización del lane
 	if lanes.has(player_id):
 		lanes[player_id].update_progress(player_progress[player_id])
-		# Opcional: efecto de shake en el carril
-		# lanes[player_id].shake_effect()
 	
-	# 3. Enviar feedback al móvil (vibración, actualización de barra)
 	NetworkManager.send_to_player(player_id, {
 		"type": "button_feedback",
 		"progress": player_progress[player_id],
@@ -114,39 +107,25 @@ func _on_player_button_pressed(player_id: int) -> void:
 	})
 	
 	print("🏃 P%d pulsa #%d. Progreso: %.0f%%" % [
-		player_id, 
+		player_id,
 		button_press_count[player_id],
 		player_progress[player_id] * 100
 	])
 	
-	# 4. Revisar si alcanzó 100%
 	if player_progress[player_id] >= 1.0:
 		_on_player_finished(player_id)
 
 func _on_player_finished(player_id: int) -> void:
-	"""
-	Se llama cuando un jugador alcanza 100% de progreso.
-	Registra la victoria y termina el minijuego.
-	"""
-	
-	# Evitar múltiples ganadores
 	if finish_order.size() > 0:
 		print("⚠️ P%d terminó pero ya hay ganador" % player_id)
 		return
 	
-	# Registrar ganador
 	finish_order.append(player_id)
+	print("🏆 ¡GANADOR! P%d en %d pulsaciones" % [player_id, button_press_count[player_id]])
 	
-	print("🏆 ¡GANADOR! P%d completó en %d pulsaciones" % [
-		player_id, 
-		button_press_count[player_id]
-	])
-	
-	# Efecto visual en el lane ganador
 	if lanes.has(player_id):
 		lanes[player_id].highlight_winner()
 	
-	# Enviar notificación al móvil del ganador
 	NetworkManager.send_to_player(player_id, {
 		"type": "race_finished",
 		"winner": true,
@@ -154,91 +133,47 @@ func _on_player_finished(player_id: int) -> void:
 		"presses": button_press_count[player_id]
 	})
 	
-	# Terminar el minijuego
 	_end_minigame_base()
 
 # =========================================================
-# GANCHOS DE BASEMINIGAME (virtuales)
+# GANCHOS DE BASEMINIGAME
 # =========================================================
 
 func _minigame_start() -> void:
-	"""
-	Se llama después del countdown.
-	El juego está listo para recibir pulsaciones.
-	"""
 	print("🎮 Sprint comenzado - ¡A pulsar!")
 
 func _minigame_end() -> void:
-	"""
-	Se llama cuando termina el minijuego.
-	Aquí puedes parar música, limpiar efectos, etc.
-	"""
 	print("🏁 Sprint terminado")
 
 func _minigame_player_died(id: int) -> void:
-	"""
-	En Sprint no hay "muerte", pero este gancho está aquí
-	para consistencia con otros minijuegos.
-	"""
 	if lanes.has(id):
 		lanes[id].highlight_loser()
 
 func _setup_custom_player(player: Node2D) -> void:
-	"""
-	Se llama por cada jugador spawneado.
-	En Sprint no necesitamos setup especial.
-	"""
 	pass
 
 # =========================================================
-# UTILIDADES PÚBLICAS
+# UTILIDADES
 # =========================================================
 
 func get_lane(player_id: int) -> SprintLane:
-	"""Retorna el lane de un jugador específico."""
 	return lanes.get(player_id, null)
 
-func get_all_lanes() -> Dictionary:
-	"""Retorna todos los lanes (player_id -> SprintLane)."""
-	return lanes.duplicate()
-
-func get_total_lanes() -> int:
-	"""Retorna cantidad de lanes activos."""
-	return lanes.size()
-
 func get_player_progress(player_id: int) -> float:
-	"""Retorna el progreso de un jugador (0.0-1.0)."""
 	return player_progress.get(player_id, 0.0)
 
-func get_button_presses(player_id: int) -> int:
-	"""Retorna cantidad de pulsaciones de un jugador."""
-	return button_press_count.get(player_id, 0)
-
 func get_winner() -> int:
-	"""Retorna el ID del ganador (-1 si aún no hay)."""
 	return finish_order[0] if finish_order.size() > 0 else -1
 
 func reset_game() -> void:
-	"""Reinicia el estado del juego (para pruebas)."""
 	for p_id in player_progress.keys():
 		player_progress[p_id] = 0.0
 		button_press_count[p_id] = 0
 		if lanes.has(p_id):
 			lanes[p_id].reset()
-	
 	finish_order.clear()
 	print("🔄 Juego reseteado")
-
-# =========================================================
-# DEBUG
-# =========================================================
-
-func _input_debug(event: InputEvent) -> void:
-	"""Herramientas para testing (opcional)."""
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_1: _on_player_button_pressed(1)
-			KEY_2: _on_player_button_pressed(2)
-			KEY_3: _on_player_button_pressed(3)
-			KEY_4: _on_player_button_pressed(4)
-			KEY_R: reset_game()
+	
+	
+	
+	
