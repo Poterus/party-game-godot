@@ -14,8 +14,8 @@ var is_dead: bool = false
 
 @onready var sprite = $Sprite2D
 @onready var anim_player = $AnimationPlayer
-@onready var face_polygon = $Polygon2D 
-@onready var face_sprite = $Polygon2D/FaceSprite 
+@onready var face_polygon = $Sprite2D/Polygon2D
+@onready var face_sprite = $Sprite2D/Polygon2D/FaceSprite
 
 signal player_died(id: int)
 

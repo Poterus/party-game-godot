@@ -1,27 +1,24 @@
 extends Node2D
 class_name BaseMinigame
 
-# --- REFERENCIAS OPCIONALES ---
 @export var spawn_manager: Node2D
 @export var countdown_ui: CanvasLayer
 @export var victory_ui: PackedScene
 @export var hud_ui: CanvasLayer
 @export var minigame_layout: String = "joystick"
 
-# --- ESTADO INTERNO ---
 var game_active: bool = false
 var time_survived: float = 0.0
 var players_alive: int = 0
 var initial_players_count: int = 0
 var is_solo_mode: bool = false
 var is_game_over: bool = false
-var spawned_players: Array = []
 
 func _ready() -> void:
 	is_solo_mode = (NetworkManager.current_play_mode == "solo")
 	
 	if spawn_manager:
-		spawned_players = spawn_manager.spawn_all_players(
+		var spawned_players = spawn_manager.spawn_all_players(
 			NetworkManager.current_play_mode, 
 			NetworkManager.host_plays_on_pc, 
 			NetworkManager.player_faces.size()
@@ -53,23 +50,18 @@ func _process(delta: float) -> void:
 
 func _internal_start_game():
 	game_active = true
-	
 	if spawn_manager:
 		for child in spawn_manager.get_parent().get_children():
 			if child.name.begins_with("Player") and not child.is_dead:
 				child.can_move = true
-	
 	_minigame_start()
 
 func _on_player_died_base(id: int) -> void:
 	if is_game_over: return
-	
 	players_alive -= 1
 	if hud_ui:
 		hud_ui.update_player_death(id)
-	
 	_minigame_player_died(id)
-	
 	if is_solo_mode:
 		if players_alive <= 0: _end_minigame_base()
 	else:
@@ -79,11 +71,8 @@ func _end_minigame_base() -> void:
 	if is_game_over: return
 	is_game_over = true
 	game_active = false
-	
 	_minigame_end()
-	
 	await get_tree().create_timer(1.5).timeout
-	
 	if victory_ui:
 		var victory_screen = victory_ui.instantiate()
 		get_tree().root.add_child(victory_screen)
@@ -98,10 +87,6 @@ func _get_winner_id() -> int:
 			if child.name.begins_with("Player") and not child.is_dead:
 				return child.my_player_id
 	return -1
-
-# =========================================================
-# GANCHOS VIRTUALES
-# =========================================================
 
 func _minigame_start() -> void:
 	pass

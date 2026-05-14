@@ -3,7 +3,9 @@ class_name Sprint
 
 # ====================================================
 # SPRINT: Carrera horizontal DINÁMICA
-# Crea lanes automáticamente según jugadores activos
+# - Max 4 jugadores por columna
+# - 5-8 jugadores: dos columnas
+# - SIN scaling: lanes mantienen su tamaño original
 # ====================================================
 
 # --- CONFIGURACIÓN EXPORTADA ---
@@ -18,8 +20,10 @@ var lanes: Dictionary = {}
 
 # --- CONSTANTES ---
 const LANE_W = 480.0     # Ancho real del lane en el editor
-const LANE_H = 60.0      # Altura real del lane en el editor
+const LANE_H = 50.0      # Altura real del lane en el editor
 const LANE_MARGIN = 5.0  # Margen entre lanes
+const MAX_PER_COLUMN = 4 # Máximo lanes por columna
+const MAX_PLAYERS = 8    # Máximo total de jugadores
 
 # --- REFERENCIAS DE NODOS ---
 @onready var lanes_container = $LanesContainer
@@ -68,23 +72,36 @@ func _instantiate_lanes() -> void:
 	
 	var player_ids = NetworkManager.player_faces.keys()
 	var face_dict = NetworkManager.player_faces
-	var total = player_ids.size()
+	var total = min(player_ids.size(), MAX_PLAYERS)
 	
 	var screen_w = ProjectSettings.get_setting("display/window/size/viewport_width")
 	var screen_h = ProjectSettings.get_setting("display/window/size/viewport_height")
-	var available_h = screen_h * 0.9
+	
+	# Determinar columnas
+	var columns = 1 if total <= MAX_PER_COLUMN else 2
+	var lanes_per_column = ceil(total / float(columns))
+	
+	# Centrado vertical
 	var slot_h = LANE_H + LANE_MARGIN
-	var lane_scale = min(1.0, available_h / (total * slot_h))
-	var total_height = total * slot_h * lane_scale
-	var center_x = (screen_w / 2.0) - (LANE_W * lane_scale / 2.0)
+	var total_height = lanes_per_column * slot_h
 	var center_y = (screen_h / 2.0) - (total_height / 2.0)
-
+	
+	# Centrado horizontal por columnas
+	var column_width = screen_w / float(columns)
+	var lane_x_offset = (column_width - LANE_W) / 2.0
+	
 	for i in range(total):
 		var p_id = player_ids[i]
+		var col = i / int(MAX_PER_COLUMN)
+		var row = i % int(MAX_PER_COLUMN)
+		
 		var new_lane: SprintLane = sprint_lane_scene.instantiate()
 		lanes_container.add_child(new_lane)
-		new_lane.scale = Vector2(lane_scale, lane_scale)
-		new_lane.position = Vector2(center_x, center_y + (i * slot_h * lane_scale))
+		
+		var pos_x = (column_width * col) + lane_x_offset
+		var pos_y = center_y + (row * slot_h)
+		new_lane.position = Vector2(pos_x, pos_y)
+		
 		new_lane.setup(p_id, face_dict.get(p_id, null))
 		lanes[p_id] = new_lane
 
@@ -173,7 +190,3 @@ func reset_game() -> void:
 			lanes[p_id].reset()
 	finish_order.clear()
 	print("🔄 Juego reseteado")
-	
-	
-	
-	

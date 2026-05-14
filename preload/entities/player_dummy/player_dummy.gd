@@ -1,7 +1,7 @@
 extends Node2D
 
 @onready var anim_player = $AnimationPlayer
-@onready var face_sprite = $Polygon2D/FaceSprite
+@onready var face_sprite = $Sprite2D/Polygon2D/FaceSprite
 @onready var sprite = $Sprite2D
 
 func _ready():

@@ -121,18 +121,12 @@ func _process_websocket_server() -> void:
 				var packet = ws.get_packet()
 				var message = packet.get_string_from_utf8()
 				
-				# --- CHIVATO DE TAMAÑO ---
-				print("📦 Paquete recibido. Tamaño: ", packet.size(), " bytes")
 				
 				var data = JSON.parse_string(message)
 				
 				if typeof(data) == TYPE_DICTIONARY:
 					# --- CHIVATO DE TIPO ---
-					print("✉️ Mensaje tipo: ", data.get("type", "desconocido"))
 					_handle_phone_message(ws, data)
-				else:
-					# --- CHIVATO DE ERROR ---
-					print("❌ ERROR: Llegó algo que no es un JSON válido.")
 					
 		elif state == WebSocketPeer.STATE_CLOSED:
 			print("Desconexión. Limpiando datos...")
@@ -331,6 +325,14 @@ func debug_add_fake_player() -> void:
 	player_face_updated.emit(fake_id, fake_texture)
 	
 	print("DEBUG: Jugador fantasma añadido de forma segura con ID: ", fake_id)
+		# Crear las acciones de input para este jugador
+	var actions = ["up", "down", "left", "right", "dash"]
+	for action in actions:
+		var action_name = action + "_" + str(fake_id)
+		if not InputMap.has_action(action_name):
+			InputMap.add_action(action_name)
+	
+
 	
 func send_layout_to_all(layout_name: String) -> void:
 	var msg_string = JSON.stringify({"type": "change_layout", "layout": layout_name})
