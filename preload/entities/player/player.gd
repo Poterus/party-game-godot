@@ -45,7 +45,7 @@ func _physics_process(delta: float) -> void:
 	if mode == ControllerMode.HORIZONTAL:
 		if not is_on_floor():
 			velocity.y += gravity * delta
-		
+
 		# Girar solo visualmente mientras está vivo
 		if move_dir.x > 0.01:
 			sprite.flip_h = false
@@ -53,9 +53,12 @@ func _physics_process(delta: float) -> void:
 		elif move_dir.x < -0.01:
 			sprite.flip_h = true
 			face_polygon.scale.x = -1
-			
+
 		velocity.x = lerp(velocity.x, move_dir.x * SPEED, ACCELERATION)
-		
+	elif mode == ControllerMode.TOP_DOWN:
+		velocity.x = lerp(velocity.x, move_dir.x * SPEED, ACCELERATION)
+		velocity.y = lerp(velocity.y, move_dir.y * SPEED, ACCELERATION)
+
 	move_and_slide()
 	_update_animations(move_dir)
 

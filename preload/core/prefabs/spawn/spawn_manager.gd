@@ -5,14 +5,14 @@ extends Node2D
 # Nos aseguramos de precargar la escena
 const PLAYER_SCENE = preload("res://entities/player/player.tscn")
 
-func spawn_all_players(_mode, _host_on_pc, _count) -> Array:
+func spawn_all_players() -> Array:
 	var players_created = []
 	var ids = NetworkManager.player_faces.keys() 
 	
 	# 1. Recopilamos todos los Marker2D que hayas puesto como hijos de este nodo
 	var spawn_points = []
 	for child in get_children():
-		if child is Marker2D or child is Marker2D: # Position2D en Godot 3, Marker2D en Godot 4
+		if child is Marker2D:
 			spawn_points.append(child)
 			
 	print("SpawnManager: Encontrados ", spawn_points.size(), " puntos de spawn.")

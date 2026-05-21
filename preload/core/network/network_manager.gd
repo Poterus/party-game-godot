@@ -93,7 +93,6 @@ func _send_html_response(peer: StreamPeerTCP) -> void:
 	
 	peer.put_data(header.to_utf8_buffer())
 	peer.put_data(body_bytes)
-	OS.delay_msec(10)
 	
 # ==========================================
 # LÓGICA DEL WEBSOCKET
@@ -129,9 +128,12 @@ func _process_websocket_server() -> void:
 					_handle_phone_message(ws, data)
 					
 		elif state == WebSocketPeer.STATE_CLOSED:
-			print("Desconexión. Limpiando datos...")
-			# Idealmente aquí emitiríamos una señal de player_left
+			var disconnected_id = _get_player_id_from_ws(ws)
+			print("📴 Jugador ", disconnected_id, " desconectado. Limpiando datos...")
+			ws_ips.erase(ws.get_instance_id())
+			player_joysticks.erase(disconnected_id)
 			connected_phones.remove_at(i)
+			# player_faces y player_ips se conservan para permitir reconexión por IP
 
 # ==========================================
 # GESTIÓN DE JUGADORES E INPUTS

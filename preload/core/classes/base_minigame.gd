@@ -13,21 +13,18 @@ var players_alive: int = 0
 var initial_players_count: int = 0
 var is_solo_mode: bool = false
 var is_game_over: bool = false
+var player_nodes: Array = []
 
 func _ready() -> void:
 	is_solo_mode = (NetworkManager.current_play_mode == "solo")
-	
+
 	if spawn_manager:
-		var spawned_players = spawn_manager.spawn_all_players(
-			NetworkManager.current_play_mode, 
-			NetworkManager.host_plays_on_pc, 
-			NetworkManager.player_faces.size()
-		)
-		players_alive = spawned_players.size()
+		player_nodes = spawn_manager.spawn_all_players()
+		players_alive = player_nodes.size()
 		initial_players_count = players_alive
 		if hud_ui:
 			hud_ui.create_icons(players_alive, NetworkManager.host_plays_on_pc)
-		for p in spawned_players:
+		for p in player_nodes:
 			p.player_died.connect(_on_player_died_base)
 			_setup_custom_player(p)
 	else:
@@ -82,10 +79,9 @@ func _end_minigame_base() -> void:
 			victory_screen.show_multiplayer_winner(_get_winner_id())
 
 func _get_winner_id() -> int:
-	if players_alive == 1 and spawn_manager:
-		for child in spawn_manager.get_parent().get_children():
-			if child.name.begins_with("Player") and not child.is_dead:
-				return child.my_player_id
+	for p in player_nodes:
+		if not p.is_dead:
+			return p.my_player_id
 	return -1
 
 func _minigame_start() -> void:

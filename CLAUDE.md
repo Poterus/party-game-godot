@@ -53,6 +53,7 @@ signal player_died(id: int)
 ```
 
 - El movimiento lee primero el joystick del teléfono (`player_joysticks[id]`), y si no hay input usa el teclado (`left_1`, `right_1`, etc.)
+- Modo HORIZONTAL: tiene gravedad y solo mueve en X. Modo TOP_DOWN: mueve en X e Y sin gravedad
 - Para matar a un jugador: llamar `player.die()` — gestiona la animación y emite `player_died`
 - La foto de cara se aplica automáticamente vía señal de NetworkManager
 
@@ -91,6 +92,10 @@ func _setup_custom_player(_player: Node2D) -> void:  # Para cada jugador al spaw
 @export var minigame_layout: String    # Layout del teléfono durante el juego
 ```
 
+### Variables de estado útiles
+- `player_nodes: Array` — lista de nodos Player spawneados; úsala en lugar de buscar en la escena
+- `players_alive`, `initial_players_count`, `game_active`, `is_solo_mode`
+
 ### Lógica de victoria automática
 - **Solo**: termina cuando `players_alive <= 0`, muestra tiempo sobrevivido
 - **Multi**: termina cuando `players_alive <= 1`, muestra al ganador
@@ -100,6 +105,8 @@ func _setup_custom_player(_player: Node2D) -> void:  # Para cada jugador al spaw
 ## SpawnManager (`preload/core/prefabs/spawn/`)
 
 Poner `Marker2D` como hijos del SpawnManager para definir puntos de spawn. Si hay más jugadores que markers, los extras spawnean en posiciones por defecto.
+
+`spawn_all_players()` no recibe parámetros — lee directamente de `NetworkManager`.
 
 ---
 
