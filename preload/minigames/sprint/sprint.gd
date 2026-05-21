@@ -84,22 +84,22 @@ func _instantiate_lanes() -> void:
 	# Centrado vertical
 	var slot_h = LANE_H + LANE_MARGIN
 	var total_height = lanes_per_column * slot_h
-	var center_y = (screen_h / 2.0) - (total_height / 2.0)
-	
+	var center_y = round((screen_h / 2.0) - (total_height / 2.0))
+
 	# Centrado horizontal por columnas
 	var column_width = screen_w / float(columns)
-	var lane_x_offset = (column_width - LANE_W) / 2.0
-	
+	var lane_x_offset = round((column_width - LANE_W) / 2.0)
+
 	for i in range(total):
 		var p_id = player_ids[i]
 		var col = i / int(MAX_PER_COLUMN)
 		var row = i % int(MAX_PER_COLUMN)
-		
+
 		var new_lane: SprintLane = sprint_lane_scene.instantiate()
 		lanes_container.add_child(new_lane)
-		
-		var pos_x = (column_width * col) + lane_x_offset
-		var pos_y = center_y + (row * slot_h)
+
+		var pos_x = round((column_width * col) + lane_x_offset)
+		var pos_y = round(center_y + (row * slot_h))
 		new_lane.position = Vector2(pos_x, pos_y)
 		
 		new_lane.setup(p_id, face_dict.get(p_id, null))

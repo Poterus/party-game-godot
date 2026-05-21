@@ -29,21 +29,25 @@ func setup(p_id: int, p_face: ImageTexture = null) -> void:
 	if label_player:
 		label_player.text = "P%d" % p_id
 	
-	# Posición inicial del sprite
+	# Posición inicial del sprite (enteros para evitar sub-pixel en pixel art)
 	if player_sprite:
-		player_sprite.position = Vector2(10, lane_height / 2.0)
+		player_sprite.position = Vector2(10, floor(lane_height / 2.0))
 	
 	print("✓ Lane P%d configurado" % p_id)
 
 func update_progress(progress: float) -> void:
 	current_progress = clamp(progress, 0.0, 1.0)
-	
+
 	if player_sprite:
-		var target_x = current_progress * lane_width
+		var target_x = round(current_progress * lane_width)
 		var tween = create_tween()
 		tween.set_ease(Tween.EASE_OUT)
 		tween.set_trans(Tween.TRANS_QUAD)
 		tween.tween_property(player_sprite, "position:x", target_x, 0.1)
+
+func _process(_delta: float) -> void:
+	if player_sprite:
+		player_sprite.position.x = round(player_sprite.position.x)
 
 func get_player_id() -> int:
 	return player_id
