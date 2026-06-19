@@ -70,10 +70,15 @@ polygon = PackedVector2Array(2, -10, 2, -10, 2, -9, 4, -9, 4, -8, 5, -8, 5, -7, 
 
 [node name="FaceSprite" type="Sprite2D" parent="Sprite2D/Polygon2D" unique_id=1137713906]
 texture_filter = 1
-position = Vector2(-1, -2.047322)
-scale = Vector2(0.25, 0.25)
+position = Vector2(0, -2.5)
+scale = Vector2(0.275, 0.275)
 texture = ExtResource("3_rquux")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=649159179]
 libraries/ = SubResource("AnimationLibrary_hp4yk")
 speed_scale = 0.5
+
+[node name="HatSprite" type="Sprite2D" parent="." unique_id=884276341]
+visible = false
+texture_filter = 1
+position = Vector2(0, -14)

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://db0pnc0vicdod" path="res://entities/player/player.gd" id="1_symyc"]
 [ext_resource type="Texture2D" uid="uid://be2arsns6tnu6" path="res://assets/sprites/player_megaspritesheet_noface.png" id="2_abrql"]
+[ext_resource type="Texture2D" uid="uid://d257ffddlidy4" path="res://assets/sprites/icon.svg" id="3_sglur"]
 
 [sub_resource type="Animation" id="Animation_sglur"]
 length = 0.001
@@ -108,8 +109,9 @@ tracks/3/keys = {
 
 [sub_resource type="Animation" id="Animation_fkugw"]
 resource_name = "idle"
-length = 0.43333334
+length = 0.6
 loop_mode = 1
+step = 0.025
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -117,7 +119,7 @@ tracks/0/path = NodePath("Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.120000005, 0.24000001, 0.36),
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
 "transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 1,
 "values": [8, 9, 10, 11]
@@ -129,10 +131,67 @@ tracks/1/path = NodePath("Sprite2D/Polygon2D:position")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.12, 0.36),
+"times": PackedFloat32Array(0, 0.15, 0.45),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 1,
 "values": [Vector2(0, 1), Vector2(0, 0), Vector2(0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_8fjmc"]
+resource_name = "jump"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0375, 0.075, 0.112500004, 0.15, 0.18750003, 0.22500001, 0.26250002),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [48, 49, 50, 51, 52, 53, 54, 55]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D/Polygon2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0375, 0.1125, 0.1875, 0.225, 0.2625),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(0, 3), Vector2(0, -3), Vector2(0, -1), Vector2(0, 3), Vector2(0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_qiwj3"]
+resource_name = "punch"
+length = 0.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [40, 41, 42]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D/Polygon2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [Vector2(0, 2), Vector2(0, 0)]
 }
 
 [sub_resource type="Animation" id="Animation_bls4j"]
@@ -155,7 +214,7 @@ tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/path = NodePath("Sprite2D/Polygon2D:position")
-tracks/1/interp = 1
+tracks/1/interp = 0
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
@@ -169,17 +228,21 @@ _data = {
 &"RESET": SubResource("Animation_sglur"),
 &"death": SubResource("Animation_abrql"),
 &"idle": SubResource("Animation_fkugw"),
+&"jump": SubResource("Animation_8fjmc"),
+&"punch": SubResource("Animation_qiwj3"),
 &"walk": SubResource("Animation_bls4j")
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sfv1e"]
-size = Vector2(11, 14.5)
+size = Vector2(10.5, 14)
 
 [node name="Player" type="CharacterBody2D" unique_id=1665306505]
+position = Vector2(1, -15)
 collision_mask = 2
 script = ExtResource("1_symyc")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=280138818]
+position = Vector2(0, -1)
 texture = ExtResource("2_abrql")
 hframes = 8
 vframes = 7
@@ -188,18 +251,23 @@ frame = 8
 [node name="Polygon2D" type="Polygon2D" parent="Sprite2D" unique_id=1737296737]
 clip_children = 1
 position = Vector2(0, 1)
-scale = Vector2(1, 0.9375)
-polygon = PackedVector2Array(2, -10.666667, 2, -9.6, 4, -9.6, 4, -8.533334, 5, -8.533334, 5, -7.466667, 6, -7.466667, 6, -5.3333335, 7, -5.3333335, 7, 0, 6, 0, 6, 2.1333337, 5, 2.1333337, 5, 4.266667, 4, 4.266667, 4, 5.333334, -1, 5.333334, -1, 4.266667, -4, 4.266667, -4, 3.2000003, -6, 3.2000003, -6, 2.1333337, -7, 2.1333337, -7, 0, -8, 0, -8, 0, -8, -5.3333335, -7, -5.3333335, -7, -7.466667, -6, -7.466667, -6, -8.533334, -5, -8.533334, -5, -9.6, -3, -9.6, -3, -10.666667)
+polygon = PackedVector2Array(2, -10, 2, -10, 2, -9, 4, -9, 4, -8, 5, -8, 5, -7, 6, -7, 6, -5, 7, -5, 7, 0, 7, 0, 6, 0, 6, 2, 5, 2, 5, 4, 4, 4, 4, 5, -1, 5, -1, 4, -4, 4, -4, 3, -6, 3, -6, 2, -7, 2, -7, 0, -8, 0, -8, 0, -8, -5, -7, -5, -7, -7, -6, -7, -6, -8, -5, -8, -5, -9, -3, -9, -3, -10)
 
 [node name="FaceSprite" type="Sprite2D" parent="Sprite2D/Polygon2D" unique_id=447397917]
 texture_filter = 1
-position = Vector2(-0.99999994, -3)
+position = Vector2(-0.5, -2.5)
 scale = Vector2(0.25, 0.25)
+texture = ExtResource("3_sglur")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=753206239]
 libraries/ = SubResource("AnimationLibrary_fkugw")
 speed_scale = 0.5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2006177913]
-position = Vector2(-0.5, 8.75)
+position = Vector2(-1.25, 8)
 shape = SubResource("RectangleShape2D_sfv1e")
+
+[node name="HatSprite" type="Sprite2D" parent="." unique_id=338156789]
+visible = false
+texture_filter = 1
+position = Vector2(0, -14)

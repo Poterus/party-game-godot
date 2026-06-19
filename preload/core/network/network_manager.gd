@@ -11,8 +11,11 @@ var host_plays_on_pc: bool = false
 # Diccionarios de estado de los jugadores
 var player_joysticks: Dictionary = {}
 var player_faces: Dictionary = {}
-var player_ips: Dictionary = {}      # player_id -> IP string
-var ws_ips: Dictionary = {}          # ws object id -> IP string (temporal hasta join)
+var player_names: Dictionary = {}         # player_id -> nombre String
+var player_ips: Dictionary = {}           # player_id -> IP string
+var ws_ips: Dictionary = {}               # ws object id -> IP string (temporal hasta join)
+var player_customizations: Dictionary = {} # player_id -> {skin_color, hat}
+var claimed_colors: Dictionary = {}        # hex_string -> player_id
 
 # --- SERVIDOR WEBSOCKET (Juego) ---
 const WS_PORT = 8080
@@ -32,6 +35,8 @@ var host_player_id: int = -1 # -1 = sin host asignado aún
 signal player_joined(player_id: int)
 signal player_joystick(player_id: int, axis_x: float, axis_y: float)
 signal player_face_updated(player_id: int, texture: ImageTexture)
+signal player_name_updated(player_id: int, name: String)
+signal player_customization_updated(player_id: int, skin_color: Color, hat: int)
 signal host_changed(new_id: int)
 signal host_start_game
 
@@ -133,6 +138,13 @@ func _process_websocket_server() -> void:
 			ws_ips.erase(ws.get_instance_id())
 			player_joysticks.erase(disconnected_id)
 			connected_phones.remove_at(i)
+			# Liberar color reclamado al desconectarse
+			var custom: Dictionary = player_customizations.get(disconnected_id, {})
+			var released_hex: String = custom.get("skin_color", "")
+			if released_hex != "" and claimed_colors.get(released_hex) == disconnected_id:
+				claimed_colors.erase(released_hex)
+				_broadcast_colors_status()
+			player_customizations.erase(disconnected_id)
 			# player_faces y player_ips se conservan para permitir reconexión por IP
 
 # ==========================================
@@ -216,9 +228,45 @@ func _handle_phone_message(ws: WebSocketPeer, data: Dictionary) -> void:
 				
 		"joystick":
 			player_joysticks[player_id] = Vector2(float(data["axis_x"]), float(data["axis_y"]))
+
+		"customization":
+			var skin_hex: String = data.get("skin_color", "")
+			var hat_id: int = int(data.get("hat", 0))
+
+			# Liberar color anterior si tenía uno distinto
+			var old_data: Dictionary = player_customizations.get(player_id, {})
+			var old_hex: String = old_data.get("skin_color", "")
+			if old_hex != "" and old_hex != skin_hex and claimed_colors.get(old_hex) == player_id:
+				claimed_colors.erase(old_hex)
+
+			# Rechazar si ya está reclamado por otro jugador
+			if skin_hex != "" and claimed_colors.has(skin_hex) and claimed_colors[skin_hex] != player_id:
+				send_to_player(player_id, {"type": "color_rejected", "color": skin_hex})
+				return
+
+			# Registrar reclamación y guardar
+			if skin_hex != "":
+				claimed_colors[skin_hex] = player_id
+			player_customizations[player_id] = {"skin_color": skin_hex, "hat": hat_id}
+
+			# Emitir señal al lobby y broadcast a todos los móviles
+			var color := Color.from_string(skin_hex, Color.WHITE) if skin_hex != "" else Color.WHITE
+			player_customization_updated.emit(player_id, color, hat_id)
+			_broadcast_colors_status()
+
+		"ready":
+			# El jugador terminó de personalizar
+			if player_id == host_player_id:
+				send_to_player(player_id, {"type": "change_layout", "layout": "lobby_host"})
+			else:
+				send_to_player(player_id, {"type": "change_layout", "layout": "espera"})
 			
 		"face_photo":
 			if data.has("data"):
+				var nombre: String = data.get("name", "").strip_edges()
+				if nombre != "":
+					player_names[player_id] = nombre
+					player_name_updated.emit(player_id, nombre)
 				_process_face_photo(player_id, data["data"])
 		
 		"transfer_host":
@@ -254,11 +302,12 @@ func _process_face_photo(player_id: int, base64_data: String) -> void:
 		
 		# 5. Guardamos en el diccionario y avisamos al resto del juego
 		player_faces[player_id] = texture
-		player_face_updated.emit(player_id, texture)
-		print("📸 Foto recibida y procesada con éxito para Jugador ", player_id)
-		# El primero en mandar foto es el host
+		# Primero asignar host (envía "lobby_host"), luego emitir la señal
+		# (lobby_local enviará "lobby" que llegará después y quedará visible)
 		if host_player_id == -1:
 			set_host(player_id)
+		player_face_updated.emit(player_id, texture)
+		print("📸 Foto recibida y procesada con éxito para Jugador ", player_id)
 	else:
 		push_error("Error convirtiendo bytes a imagen. Código: ", error)
 
@@ -336,6 +385,15 @@ func debug_add_fake_player() -> void:
 	
 
 	
+func _broadcast_colors_status() -> void:
+	var msg := {"type": "colors_status", "claimed": {}}
+	for hex in claimed_colors:
+		msg["claimed"][hex] = claimed_colors[hex]
+	var msg_str := JSON.stringify(msg)
+	for ws in connected_phones:
+		if typeof(ws) == TYPE_OBJECT and ws.has_method("send_text"):
+			ws.send_text(msg_str)
+
 func send_layout_to_all(layout_name: String) -> void:
 	var msg_string = JSON.stringify({"type": "change_layout", "layout": layout_name})
 	for ws in connected_phones:

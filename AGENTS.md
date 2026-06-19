@@ -1,4 +1,4 @@
-# Party Game Godot — CLAUDE.md
+# Party Game Godot — AGENTS.md
 
 ## Qué es este proyecto
 

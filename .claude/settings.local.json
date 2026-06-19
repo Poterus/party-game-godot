@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(where.exe git 2>$null; if \\(-not $?\\) { \"No encontrado con where\" })"
+      "PowerShell(where.exe git 2>$null; if \\(-not $?\\) { \"No encontrado con where\" })",
+      "WebFetch(domain:www.youtube.com)",
+      "WebSearch",
+      "WebFetch(domain:godotshaders.com)",
+      "WebFetch(domain:notkey.studio)",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:old.reddit.com)",
+      "WebFetch(domain:forum.godotengine.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.godotengine.org)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\scenes\\\\player\")",
+      "Bash(ls \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\\" && ls \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\scenes\\\\\" && ls \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\scenes\\\\player\\\\\")",
+      "Bash(ls \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\")",
+      "Bash(dir \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\minigames\" /s /b)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\dani\\\\Documents\\\\GitHub\\\\party-game-3d\\\\minigames\\\\hexagonos\")",
+      "Bash(ls \"C:\\\\Users\\\\dani\\\\.claude\\\\projects\\\\\")"
     ]
   }
 }

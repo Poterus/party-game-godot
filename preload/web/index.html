@@ -941,10 +941,216 @@
         /* ============================================================
            RESPONSIVE: ensure no overflow
         ============================================================ */
+        /* ============================================================
+           LAYOUT: LOBBY PERSONALIZACIÓN
+        ============================================================ */
+        #layout-lobby {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 16px;
+            padding: 20px 16px;
+            overflow-y: auto;
+        }
+
+        .custom-section-title {
+            font-family: var(--font-pixel);
+            font-size: 0.45rem;
+            color: var(--clr-muted);
+            letter-spacing: 3px;
+            align-self: flex-start;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .color-swatch {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+            touch-action: manipulation;
+            transition: transform 0.08s, border-color 0.08s;
+        }
+
+        .color-swatch.selected {
+            border-color: var(--clr-yellow);
+            transform: scale(1.18);
+            box-shadow: 0 0 14px rgba(247,213,29,0.7);
+        }
+
+        .color-swatch.taken {
+            opacity: 0.22;
+            cursor: not-allowed;
+            filter: grayscale(1);
+            transform: none !important;
+        }
+
+        .hat-grid {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .hat-btn {
+            width: 68px;
+            height: 68px;
+            border-radius: 10px;
+            border: 3px solid var(--clr-border);
+            background: var(--clr-panel);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+            touch-action: manipulation;
+            transition: border-color 0.08s, transform 0.08s;
+        }
+
+        .hat-btn.selected {
+            border-color: var(--clr-yellow);
+            transform: scale(1.1);
+            box-shadow: 0 0 14px rgba(247,213,29,0.7);
+        }
+
+        #btn-listo {
+            width: 100%;
+            max-width: 280px;
+            padding: 18px;
+            background: var(--clr-green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-pixel);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0 #007a00;
+            cursor: pointer;
+            touch-action: manipulation;
+            margin-top: 4px;
+        }
+
+        #btn-listo:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
         @media (max-height: 580px) {
             #crop-frame { width: 180px; height: 180px; }
             .logo-title .logo-line2 { font-size: 1.4rem; }
             #btn-join { padding: 14px 28px; }
+        }
+
+        /* ============================================================
+           PANTALLA: NOMBRE DEL JUGADOR
+        ============================================================ */
+        #nombre-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            padding: 0 24px;
+        }
+
+        #nombre-title {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.5rem, 3vw, 0.65rem);
+            color: var(--clr-cyan);
+            text-align: center;
+            line-height: 2;
+            text-shadow: var(--shadow-glow-c);
+        }
+
+        #nombre-input-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        #nombre-input {
+            width: 100%;
+            background: #06060f;
+            border: 2px solid var(--clr-cyan);
+            border-radius: 4px;
+            color: var(--clr-yellow);
+            font-family: var(--font-pixel);
+            font-size: clamp(0.65rem, 4vw, 0.85rem);
+            padding: 14px 52px 14px 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            outline: none;
+            box-shadow: 0 0 12px rgba(0,229,255,0.15), inset 0 2px 0 rgba(0,0,0,0.5);
+            caret-color: var(--clr-yellow);
+            -webkit-appearance: none;
+        }
+
+        #nombre-input::placeholder {
+            color: var(--clr-muted);
+            letter-spacing: 1px;
+            text-transform: none;
+        }
+
+        #nombre-input:focus {
+            border-color: var(--clr-yellow);
+            box-shadow: 0 0 16px rgba(247,213,29,0.3), inset 0 2px 0 rgba(0,0,0,0.5);
+        }
+
+        #nombre-counter {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-pixel);
+            font-size: 0.38rem;
+            color: var(--clr-muted);
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+
+        #nombre-error {
+            font-family: var(--font-pixel);
+            font-size: 0.42rem;
+            color: var(--clr-red);
+            text-align: center;
+            min-height: 1em;
+            letter-spacing: 1px;
+        }
+
+        #btn-confirmar-nombre {
+            width: 100%;
+            max-width: 280px;
+            padding: 16px;
+            background: var(--clr-cyan);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-family: var(--font-pixel);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0 #006688;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: opacity 0.15s;
+        }
+
+        #btn-confirmar-nombre:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #btn-confirmar-nombre:not(:disabled):active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
         }
     </style>
 </head>
@@ -1002,6 +1208,20 @@
         <button id="btn-join">[ UNIRSE ]</button>
 
         <p id="txt-espera">▼ ESPERANDO AL HOST ▼</p>
+
+        <!-- Pantalla de nombre -->
+        <div id="nombre-container">
+            <p id="nombre-title">◆ ELIGE TU NOMBRE ◆</p>
+            <div id="nombre-input-wrap">
+                <input type="text" id="nombre-input" maxlength="12"
+                    autocomplete="off" autocorrect="off"
+                    autocapitalize="characters" spellcheck="false"
+                    placeholder="Nombre...">
+                <span id="nombre-counter">0 / 12</span>
+            </div>
+            <p id="nombre-error"></p>
+            <button id="btn-confirmar-nombre" disabled>CONFIRMAR ▶</button>
+        </div>
 
         <!-- Avatar section -->
         <div id="photo-container">
@@ -1094,6 +1314,19 @@
         <button id="btn-comenzar">▶ &nbsp;COMENZAR PARTIDA</button>
     </div>
 
+    <!-- ═══════════════════════ LAYOUT: LOBBY PERSONALIZACIÓN ═══════════════════════ -->
+    <div id="layout-lobby" class="screen layout-panel">
+        <span class="custom-section-title">· ELIGE TU COLOR ·</span>
+        <div class="color-grid" id="color-grid"></div>
+        <span class="custom-section-title">· SOMBRERO ·</span>
+        <div class="hat-grid" id="hat-grid">
+            <button class="hat-btn selected" data-hat="0">🚫</button>
+            <button class="hat-btn" data-hat="1">🤠</button>
+            <button class="hat-btn" data-hat="2">🎩</button>
+        </div>
+        <button id="btn-listo">✓ &nbsp;LISTO</button>
+    </div>
+
     <!-- ═══════════════════════ LAYOUT: GIRA EL MÓVIL ═══════════════════════ -->
     <div id="layout-gira" class="screen layout-panel">
         <div id="gira-icon">📱</div>
@@ -1114,6 +1347,11 @@
     const hudPlayerName   = document.getElementById("hud-player-name");
     const btnJoin         = document.getElementById("btn-join");
     const txtEspera       = document.getElementById("txt-espera");
+    const nombreContainer = document.getElementById("nombre-container");
+    const nombreInput     = document.getElementById("nombre-input");
+    const nombreCounter   = document.getElementById("nombre-counter");
+    const nombreError     = document.getElementById("nombre-error");
+    const btnConfirmarNombre = document.getElementById("btn-confirmar-nombre");
     const photoContainer  = document.getElementById("photo-container");
     const previewBox      = document.getElementById("preview-box");
     const previewPhoto    = document.getElementById("preview-photo");
@@ -1133,6 +1371,7 @@
     let ws        = null;
     let wakeLock  = null;
     let finalBase64Data = "";
+    let playerName = "";  // Nombre elegido por el jugador
     let isHost    = false; // El servidor nos lo confirma con host_status
 
     // Estado cropper — NO TOCAR las matemáticas de estos valores
@@ -1150,6 +1389,51 @@
     function vibrar() { if (navigator.vibrate) navigator.vibrate(40); }
 
     // ================================================================
+    //  PANTALLA DE NOMBRE
+    // ================================================================
+    const NOMBRE_MAX   = 12;
+    const NOMBRE_REGEX = /[^A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\xFF ]/g;
+
+    nombreInput.addEventListener('input', () => {
+        const cursor   = nombreInput.selectionStart;
+        const original = nombreInput.value;
+        const filtrado = original.replace(NOMBRE_REGEX, '');
+        if (filtrado !== original) {
+            nombreInput.value = filtrado;
+            nombreError.textContent = "SOLO LETRAS Y ESPACIOS";
+            const newCursor = Math.max(0, cursor - (original.length - filtrado.length));
+            nombreInput.setSelectionRange(newCursor, newCursor);
+        } else {
+            nombreError.textContent = "";
+        }
+        nombreCounter.textContent = nombreInput.value.length + " / " + NOMBRE_MAX;
+        btnConfirmarNombre.disabled = nombreInput.value.trim().length === 0;
+    });
+
+    function confirmarNombre() {
+        const nombre = nombreInput.value.trim();
+        if (nombre.length === 0) return;
+        playerName = nombre.toUpperCase();
+        vibrar();
+        nombreContainer.style.display = "none";
+        txtEspera.style.display = "block";
+        photoContainer.style.display = "flex";
+        hudPlayerName.innerText = playerName;
+    }
+
+    btnConfirmarNombre.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        confirmarNombre();
+    }, { passive: false });
+    btnConfirmarNombre.addEventListener('click', confirmarNombre);
+
+    nombreInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && nombreInput.value.trim().length > 0) {
+            confirmarNombre();
+        }
+    });
+
+    // ================================================================
     //  GESTOR DE PANTALLAS
     // ================================================================
     function mostrarSoloScreen(id) {
@@ -1160,13 +1444,14 @@
 
     function cambiarLayout(nombre) {
         const map = {
-            "espera":   "screen-espera",
-            "botones":  "layout-botones",
-            "joystick": "layout-joystick",
-            "un_boton": "layout-un-boton",
-            "menu":     "layout-menu",
-            "gira":     "layout-gira",
+            "espera":     "screen-espera",
+            "botones":    "layout-botones",
+            "joystick":   "layout-joystick",
+            "un_boton":   "layout-un-boton",
+            "menu":       "layout-menu",
+            "gira":       "layout-gira",
             "lobby_host": "layout-lobby-host",
+            "lobby":      "layout-lobby",
         };
         const layoutsMando = ["botones", "joystick", "un_boton", "menu"];
         if (map[nombre]) {
@@ -1190,18 +1475,32 @@
             const data = JSON.parse(event.data);
 
             if (data.type === "welcome") {
-                hudPlayerName.innerText = "JUGADOR " + data.player_id;
+                // Si ya tiene nombre (reconexion), saltar directo a foto o a espera
+                if (playerName !== "") {
+                    hudPlayerName.innerText = playerName;
+                } else {
+                    hudPlayerName.innerText = "JUGADOR " + data.player_id;
+                }
                 // Registrar jugadores conocidos para el panel de transferencia
                 if (!connectedPlayerIds.includes(data.player_id)) {
                     connectedPlayerIds.push(data.player_id);
                 }
                 btnJoin.style.display = "none";
-                txtEspera.style.display = "block";
-                photoContainer.style.display = "flex";
+                // Mostrar pantalla de nombre si aun no tiene nombre, si ya tiene ir directo a foto
+                if (playerName === "") {
+                    nombreContainer.style.display = "flex";
+                } else {
+                    txtEspera.style.display = "block";
+                    photoContainer.style.display = "flex";
+                }
             }
 
             if (data.type === "change_layout") {
                 cambiarLayout(data.layout);
+            }
+
+            if (data.type === "colors_status") {
+                actualizarColoresStatus(data.claimed || {});
             }
 
             if (data.type === "host_status") {
@@ -1433,7 +1732,7 @@
 
     btnSendPhoto.addEventListener('click', () => {
         if (ws && ws.readyState === WebSocket.OPEN && finalBase64Data !== "") {
-            ws.send(JSON.stringify({ type: "face_photo", data: finalBase64Data }));
+            ws.send(JSON.stringify({ type: "face_photo", name: playerName, data: finalBase64Data }));
             photoContainer.style.display = "none";
             txtEspera.innerText = "▼ FOTO ENVIADA · ESPERANDO ▼";
         }
@@ -1506,7 +1805,7 @@
         joyStick.style.left = (60 + dx) + 'px';
         joyStick.style.top  = (60 + dy) + 'px';
         const now = Date.now();
-        if (now - lastJoySend > 50) {
+        if (now - lastJoySend > 16) {
             sendJoystick(parseFloat((dx / 60).toFixed(2)), parseFloat((dy / 60).toFixed(2)));
             lastJoySend = now;
         }
@@ -1659,6 +1958,101 @@
             document.documentElement.requestFullscreen().catch(() => {});
         }
     }, { passive: false });
+
+    // ================================================================
+    //  PERSONALIZACIÓN — COLORES Y SOMBREROS
+    // ================================================================
+    const SKIN_COLORS = [
+        { hex: "#E83030", name: "Rojo"        },
+        { hex: "#3060E8", name: "Azul"        },
+        { hex: "#F0C830", name: "Amarillo"    },
+        { hex: "#28B828", name: "Verde"       },
+        { hex: "#F5A0C8", name: "Rosa"        },
+        { hex: "#E8E8E8", name: "Blanco"      },
+        { hex: "#F07828", name: "Naranja"     },
+        { hex: "#7B4028", name: "Piel oscura" },
+        { hex: "#9030C8", name: "Morado"      },
+        { hex: "#3A3A3A", name: "Negro"       },
+    ];
+
+    let selectedColor = null;
+    let selectedHat   = 0;
+
+    // Generar swatches de color dinámicamente
+    const colorGrid = document.getElementById('color-grid');
+    SKIN_COLORS.forEach(({ hex, name }) => {
+        const swatch = document.createElement('button');
+        swatch.className = 'color-swatch';
+        swatch.style.backgroundColor = hex;
+        swatch.dataset.color = hex;
+        swatch.setAttribute('aria-label', name);
+        const pick = (e) => {
+            if (e.type === 'touchstart') e.preventDefault();
+            if (swatch.classList.contains('taken')) return;
+            elegirColor(hex);
+        };
+        swatch.addEventListener('touchstart', pick, { passive: false });
+        swatch.addEventListener('click', pick);
+        colorGrid.appendChild(swatch);
+    });
+
+    function elegirColor(hex) {
+        selectedColor = hex;
+        document.querySelectorAll('.color-swatch').forEach(s =>
+            s.classList.toggle('selected', s.dataset.color === hex)
+        );
+        enviarCustomizacion();
+        vibrar();
+    }
+
+    // Selección de sombrero
+    document.querySelectorAll('.hat-btn').forEach(btn => {
+        const pick = (e) => {
+            if (e.type === 'touchstart') e.preventDefault();
+            selectedHat = parseInt(btn.dataset.hat);
+            document.querySelectorAll('.hat-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            enviarCustomizacion();
+            vibrar();
+        };
+        btn.addEventListener('touchstart', pick, { passive: false });
+        btn.addEventListener('click', pick);
+    });
+
+    function enviarCustomizacion() {
+        if (ws && ws.readyState === WebSocket.OPEN && selectedColor) {
+            ws.send(JSON.stringify({
+                type:       "customization",
+                skin_color: selectedColor,
+                hat:        selectedHat
+            }));
+        }
+    }
+
+    function actualizarColoresStatus(claimed) {
+        const myId = parseInt(hudPlayerName.innerText.replace('JUGADOR ', '')) || 0;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            const hex       = s.dataset.color;
+            const claimedBy = claimed[hex];
+            const isMine    = claimedBy === myId;
+            const isTaken   = claimedBy !== undefined && !isMine;
+            s.classList.toggle('taken',    isTaken);
+            s.classList.toggle('selected', isMine);
+            if (isMine) selectedColor = hex;
+        });
+    }
+
+    // Botón LISTO — pasa a pantalla de espera
+    const btnListo = document.getElementById('btn-listo');
+    const listo = (e) => {
+        if (e.type === 'touchstart') e.preventDefault();
+        vibrar();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "ready" }));
+        }
+    };
+    btnListo.addEventListener('touchstart', listo, { passive: false });
+    btnListo.addEventListener('click', listo);
 
     // ================================================================
     //  INIT

@@ -15,6 +15,7 @@ const PLAYER_SLOT_SCENE = preload("res://ui/menus/lobby/lobby_player_slot.tscn")
 
 func _ready() -> void:
 	NetworkManager.player_face_updated.connect(_on_player_ready)
+	NetworkManager.player_customization_updated.connect(_on_player_customization_updated)
 	
 	_generate_lobby_qr()
 	
@@ -64,13 +65,17 @@ func _on_player_ready(id: int, texture: ImageTexture) -> void:
 	grid_players.add_child(new_slot)
 	new_slot.configure_slot(id, texture, Color.WHITE)
 	
-	# El host ya recibió "lobby_host" desde set_host() en NetworkManager.
-	# El resto reciben "espera" para que esperen en el lobby.
-	if id != NetworkManager.host_player_id:
-		NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "espera"})
+	# Todos van a personalización primero (incluido el host).
+	# Al pulsar LISTO: el host recibirá "lobby_host", el resto "espera".
+	NetworkManager.send_to_player(id, {"type": "change_layout", "layout": "lobby"})
 	
 	_update_start_button()
 	
+func _on_player_customization_updated(id: int, skin_color: Color, hat: int) -> void:
+	var slot_name = "PlayerSlot_" + str(id)
+	if grid_players.has_node(slot_name):
+		grid_players.get_node(slot_name).update_customization(skin_color, hat)
+
 func _update_start_button() -> void:
 	var players_ready = grid_players.get_child_count()
 	

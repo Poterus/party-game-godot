@@ -1,19 +1,21 @@
 [gd_scene format=3 uid="uid://ckpoao6o7ua3x"]
 
 [ext_resource type="Script" uid="uid://bybs2rdnxq213" path="res://core/prefabs/sprint_lane/sprintlane.gd" id="1_5yvcn"]
-[ext_resource type="Texture2D" uid="uid://be2arsns6tnu6" path="res://assets/sprites/player_megaspritesheet_noface.png" id="3_w6p3w"]
 
 [node name="Lane1" type="Node2D" unique_id=1767401413]
 script = ExtResource("1_5yvcn")
 
-[node name="Background" type="Polygon2D" parent="." unique_id=270763160]
-position = Vector2(239.24998, 19)
-scale = Vector2(3.6523435, 0.28125)
-polygon = PackedVector2Array(-63.86311, -56.88889, 64.2738, -56.88889, 64.821396, 81.77779, -64.13691, 64.000015)
+[node name="Background" type="ColorRect" parent="." unique_id=911869615]
+offset_left = 1.0
+offset_top = 14.0
+offset_right = 501.0
+offset_bottom = 34.0
+color = Color(0, 0.09019608, 0.44313726, 0)
 metadata/_edit_use_anchors_ = true
 
 [node name="FinishLine" type="Line2D" parent="." unique_id=1636727935]
-position = Vector2(-20, 0)
+position = Vector2(20, 9)
+scale = Vector2(1, 0.68)
 points = PackedVector2Array(470, 0, 470, 40)
 width = 5.0
 default_color = Color(1, 0, 0, 1)
@@ -27,9 +29,3 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "P1
 "
 metadata/_edit_use_anchors_ = true
-
-[node name="PlayerSprite" type="Sprite2D" parent="." unique_id=272383944]
-position = Vector2(25, -20)
-texture = ExtResource("3_w6p3w")
-hframes = 8
-vframes = 7

@@ -1,18 +1,18 @@
-extends PanelContainer # (O Control, lo que tengas puesto arriba)
+extends PanelContainer
 
-# Usamos find_child para que Godot busque en todos los sub-nodos automáticamente
-# IMPORTANTE: Los nombres entre comillas deben ser EXACTOS a como se llaman los nodos en tu escena.
-@onready var dummy = find_child("PlayerDummy", true, false)
-@onready var name_label = find_child("NameLabel", true, false) 
+@onready var dummy       = find_child("PlayerDummy", true, false)
+@onready var name_label  = find_child("NameLabel",   true, false)
 
-func configure_slot(id: int, new_texture: ImageTexture, color: Color) -> void:
-	# 1. Ponemos el nombre (si existe el texto)
+func configure_slot(id: int, new_texture: ImageTexture, _color: Color = Color.WHITE) -> void:
 	if name_label != null:
-		name_label.text = "Player " + str(id)
-	
-	# 2. Pasamos la foto al maniquí
+		var nombre: String = NetworkManager.player_names.get(id, "JUGADOR " + str(id))
+		name_label.text = nombre
 	if dummy != null:
-		dummy.setup_dummy(new_texture, color)
+		dummy.setup_dummy(new_texture)
 	else:
-		# Si sigue saliendo este error, es que el nodo no se llama "PlayerDummy" exactamente
-		printerr("CRÍTICO: ¡No encuentro ningún nodo llamado 'PlayerDummy' dentro de la casilla!")
+		printerr("CRITICO: No encuentro ningun nodo PlayerDummy dentro de la casilla!")
+
+func update_customization(skin_color: Color, hat_id: int) -> void:
+	if dummy != null:
+		dummy.apply_color(skin_color)
+		dummy.apply_hat(hat_id)
