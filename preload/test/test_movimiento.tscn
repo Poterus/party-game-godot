@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://ctestmov0sc01"]
+
+[ext_resource type="Script" uid="uid://cpjlm1ny6a4c6" path="res://test/test_movimiento.gd" id="1_test"]
+[ext_resource type="PackedScene" uid="uid://cplt1scn00001" path="res://minigames/plataformas/plataforma.tscn" id="2_plt"]
+[ext_resource type="PackedScene" uid="uid://bv020hu1daru" path="res://entities/player/player.tscn" id="3_player"]
+
+[node name="TestMovimiento" type="Node2D" unique_id=7700001]
+script = ExtResource("1_test")
+
+[node name="Background" type="ColorRect" parent="." unique_id=7700002]
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.07, 0.07, 0.15, 1)
+
+[node name="Plataforma1" parent="." unique_id=7700003 instance=ExtResource("2_plt")]
+position = Vector2(250, 180)
+
+[node name="Plataforma2" parent="." unique_id=7700004 instance=ExtResource("2_plt")]
+position = Vector2(390, 180)
+
+[node name="Player" parent="." unique_id=7700005 instance=ExtResource("3_player")]
+position = Vector2(250, 180)
+scale = Vector2(2, 2)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=7700006]
+
+[node name="LabelControles" type="Label" parent="CanvasLayer" unique_id=7700007]
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 400.0
+offset_bottom = 18.0
+text = "WASD = Mover  |  SPACE = Saltar  (solo funciona encima de plataforma)"
+
+[node name="LabelEstado" type="Label" parent="CanvasLayer" unique_id=7700008]
+offset_left = 6.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 34.0
+text = "▶ Fuera"
+
+[node name="LabelCoyote" type="Label" parent="CanvasLayer" unique_id=7700009]
+offset_left = 6.0
+offset_top = 36.0
+offset_right = 200.0
+offset_bottom = 50.0

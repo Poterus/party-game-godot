@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://kv4lm5iv2rnj"]
 
-[ext_resource type="Script" uid="uid://bxb10vtcj6q7u" path="res://ui/menus/lobby/lobby_local.gd" id="1_b8sur"]
+[ext_resource type="Script" uid="uid://bp2ybxkxblrss" path="res://ui/menus/lobby/lobby_local.gd" id="1_b8sur"]
 [ext_resource type="Script" uid="uid://dynulhnyq5hpq" path="res://addons/qr_code/qr_code_rect.gd" id="2_b247j"]
 
 [sub_resource type="Image" id="Image_b8sur"]
@@ -93,8 +93,6 @@ metadata/_custom_type_script = "uid://dynulhnyq5hpq"
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Make sure to be connected to the local wifi of the host.
-If you are unable to connect, try to go to this address manualy:"
 autowrap_mode = 2
 
 [node name="LabelIP" type="Label" parent="MarginContainer/MainVBox/HBox/LocalPanel" unique_id=409169431]

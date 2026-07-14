@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bpjluqro7ndx1"]
+
+[ext_resource type="Script" uid="uid://ui_pause_gd" path="res://core/prefabs/ui/ui_pause/ui_pause.gd" id="1_pause"]
+
+[node name="UiPause" type="CanvasLayer" unique_id=622597918]
+script = ExtResource("1_pause")
+
+[node name="Fondo" type="ColorRect" parent="." unique_id=100000001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=3473980]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -70.0
+offset_top = -55.0
+offset_right = 70.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1729356828]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LabelTitulo" type="Label" parent="PanelContainer/VBoxContainer" unique_id=983898663]
+layout_mode = 2
+horizontal_alignment = 1
+text = "PAUSA"
+
+[node name="BotonReanudar" type="Button" parent="PanelContainer/VBoxContainer" unique_id=1563421562]
+layout_mode = 2
+text = "Reanudar"
+
+[node name="BotonSalir" type="Button" parent="PanelContainer/VBoxContainer" unique_id=171110438]
+layout_mode = 2
+text = "Salir al lobby"

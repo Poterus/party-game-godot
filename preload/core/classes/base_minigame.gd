@@ -5,6 +5,7 @@ class_name BaseMinigame
 @export var countdown_ui: CanvasLayer
 @export var victory_ui: PackedScene
 @export var hud_ui: CanvasLayer
+@export var pause_ui: PackedScene
 @export var minigame_layout: String = "joystick"
 
 var game_active: bool = false
@@ -13,21 +14,20 @@ var players_alive: int = 0
 var initial_players_count: int = 0
 var is_solo_mode: bool = false
 var is_game_over: bool = false
+var is_paused: bool = false
+var player_nodes: Array = []
+var pause_menu_instance = null
 
 func _ready() -> void:
 	is_solo_mode = (NetworkManager.current_play_mode == "solo")
-	
+
 	if spawn_manager:
-		var spawned_players = spawn_manager.spawn_all_players(
-			NetworkManager.current_play_mode, 
-			NetworkManager.host_plays_on_pc, 
-			NetworkManager.player_faces.size()
-		)
-		players_alive = spawned_players.size()
+		player_nodes = spawn_manager.spawn_all_players()
+		players_alive = player_nodes.size()
 		initial_players_count = players_alive
 		if hud_ui:
 			hud_ui.create_icons(players_alive, NetworkManager.host_plays_on_pc)
-		for p in spawned_players:
+		for p in player_nodes:
 			p.player_died.connect(_on_player_died_base)
 			_setup_custom_player(p)
 	else:
@@ -43,6 +43,13 @@ func _ready() -> void:
 	
 	countdown_ui.countdown_finished.connect(_internal_start_game)
 	countdown_ui.start_countdown()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and not is_game_over:
+		if is_paused:
+			_reanudar()
+		else:
+			_pausar()
 
 func _process(delta: float) -> void:
 	if game_active and is_solo_mode:
@@ -82,11 +89,32 @@ func _end_minigame_base() -> void:
 			victory_screen.show_multiplayer_winner(_get_winner_id())
 
 func _get_winner_id() -> int:
-	if players_alive == 1 and spawn_manager:
-		for child in spawn_manager.get_parent().get_children():
-			if child.name.begins_with("Player") and not child.is_dead:
-				return child.my_player_id
+	for p in player_nodes:
+		if not p.is_dead:
+			return p.my_player_id
 	return -1
+
+func _pausar() -> void:
+	is_paused = true
+	game_active = false
+	if pause_ui and pause_menu_instance == null:
+		pause_menu_instance = pause_ui.instantiate()
+		get_tree().root.add_child(pause_menu_instance)
+		pause_menu_instance.reanudar_pressed.connect(_reanudar)
+		pause_menu_instance.salir_pressed.connect(_salir_al_lobby)
+
+func _reanudar() -> void:
+	is_paused = false
+	game_active = true
+	if pause_menu_instance:
+		pause_menu_instance.queue_free()
+		pause_menu_instance = null
+
+func _salir_al_lobby() -> void:
+	if pause_menu_instance:
+		pause_menu_instance.queue_free()
+		pause_menu_instance = null
+	get_tree().change_scene_to_file("res://ui/menus/lobby/lobby_local.tscn")
 
 func _minigame_start() -> void:
 	pass

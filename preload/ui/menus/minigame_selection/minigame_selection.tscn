@@ -62,6 +62,18 @@ layout_mode = 2
 text = "Sprint Game
 "
 
+[node name="ButtonPlataformas" type="Button" parent="MarginContainer/VBoxContainer/GridMinigames" unique_id=1225350846]
+layout_mode = 2
+text = "Plataformas"
+
+[node name="ButtonVoleo" type="Button" parent="MarginContainer/VBoxContainer/GridMinigames" unique_id=1225350847]
+layout_mode = 2
+text = "Voleo"
+
+[node name="ButtonSubida" type="Button" parent="MarginContainer/VBoxContainer/GridMinigames" unique_id=1225350848]
+layout_mode = 2
+text = "Subida"
+
 [node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer" unique_id=113351862]
 layout_mode = 2
 

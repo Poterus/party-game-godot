@@ -1,17 +1,14 @@
 extends Area2D
 
-@export var fall_speed: float = 250.0 # Velocidad constante hacia abajo
+@export var fall_speed: float = 250.0
 
 func _ready() -> void:
-	# Conectamos la señal de detección de cuerpos
 	body_entered.connect(_on_body_entered)
 
 func _process(delta: float) -> void:
-	# Movimiento lineal simple (matemática pura, sin simulador de físicas)
 	position.y += fall_speed * delta
-	
-	# AUTODESTRUCCIÓN: Vital para no llenar la memoria RAM
-	# Si la pantalla mide 360, a 400 ya está fuera de vista.
+	position = position.round() # Evita sub-pixel flickering
+
 	if position.y > 400:
 		queue_free()
 

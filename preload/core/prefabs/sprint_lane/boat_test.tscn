@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://btestboat0001"]
+
+[ext_resource type="Texture2D" uid="uid://ef054fcm62is" path="res://assets/sprites/ships/ship_sprint/ship_sprint.png" id="1_ship"]
+
+[node name="BoatTest" type="Node2D" unique_id=1313219278]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2037399214]
+position = Vector2(11, 4)
+texture = ExtResource("1_ship")
